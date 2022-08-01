@@ -110,9 +110,155 @@ public class Model extends Observable {
         boolean changed;
         changed = false;
 
-        // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
+        int n = this.board.size();
+        if (side == Side.NORTH) {
+            for (int col = 0; col < n; col++) {
+                boolean[] vis = new boolean[n];
+                for (int i = 0; i < n; i++) {
+                    vis[i] = false;
+                }
+                for (int row = n - 1; row >= 0; row--) {
+                    Tile Obj = this.board.tile(col,row);
+                    if (Obj == null) {
+                        continue;
+                    }
+                    boolean ifmove = false;
+                    for (int nrow = row + 1; nrow < n; nrow++) {
+                        Tile temp = this.board.tile(col,nrow);
+                        if (temp != null) {
+                            if (!vis[nrow] && temp.value() == Obj.value()) {
+                                this.board.move(col,nrow,Obj);
+                                changed = true;
+                                this.score += this.board.tile(col,nrow).value();
+                                vis[nrow] = true;
+                            }
+                            else {
+                                this.board.move(col, nrow - 1, Obj);
+                                if (nrow - 1 != row) {
+                                    changed = true;
+                                }
+                            }
+                            ifmove = true;
+                            break;
+                        }
+                     }
+                    if (!ifmove && row != n - 1) {
+                        this.board.move(col,n - 1,Obj);
+                        changed = true;
+                    }
+                }
+            }
+        } else if (side == Side.SOUTH) {
+            for (int col = 0; col < n; col++) {
+                boolean[] vis = new boolean[n];
+                for (int i = 0; i < n; i++) {
+                    vis[i] = false;
+                }
+                for (int row = 0; row < n; row++) {
+                    Tile Obj = this.board.tile(col,row);
+                    if (Obj == null) {
+                        continue;
+                    }
+                    boolean ifmove = false;
+                    for (int nrow = row - 1; nrow >= 0; nrow--) {
+                        Tile temp = this.board.tile(col,nrow);
+                        if (temp != null) {
+                            if (!vis[nrow] && temp.value() == Obj.value()) {
+                                this.board.move(col,nrow,Obj);
+                                changed = true;
+                                this.score += this.board.tile(col,nrow).value();
+                                vis[nrow] = true;
+                            } else {
+                                this.board.move(col, nrow + 1, Obj);
+                                if (nrow + 1 != row) {
+                                    changed = true;
+                                }
+                            }
+                            ifmove = true;
+                            break;
+                        }
+                    }
+                    if (ifmove == false && row != 0) {
+                        this.board.move(col,0,Obj);
+                        changed = true;
+                    }
+                }
+            }
+        } else if (side == Side.WEST) {
+            for (int row = 0; row < n; row++) {
+                boolean[] vis = new boolean[n];
+                for (int i = 0; i < n; i++) {
+                    vis[i] = false;
+                }
+                for (int col = 0; col < n; col++) {
+                    Tile Obj = this.board.tile(col,row);
+                    if (Obj == null) {
+                        continue;
+                    }
+                    boolean ifmove = false;
+                    for (int ncol = col - 1; ncol >= 0; ncol--) {
+                        Tile temp = this.board.tile(ncol,row);
+                        if (temp != null) {
+                            if (!vis[ncol] && temp.value() == Obj.value()) {
+                                this.board.move(ncol,row,Obj);
+                                changed = true;
+                                this.score += this.board.tile(ncol,row).value();
+                                vis[ncol] = true;
+                            } else {
+                                this.board.move(ncol + 1,row,Obj);
+                                if (ncol + 1 != col) {
+                                    changed = true;
+                                }
+                            }
+                            ifmove = true;
+                            break;
+                        }
+                    }
+                    if (!ifmove && col != 0) {
+                        this.board.move(0,row,Obj);
+                        changed = true;
+                    }
+                }
+            }
+        } else {
+            for (int row = 0; row < n; row++) {
+                boolean[] vis = new boolean[n];
+                for (int i = 0; i < n; i++) {
+                    vis[i] = false;
+                }
+                for (int col = n - 1; col >= 0; col--) {
+                    Tile Obj = this.board.tile(col,row);
+                    if (Obj == null) {
+                        continue;
+                    }
+                    boolean ifmove = false;
+                    for (int ncol = col + 1; ncol < n; ncol++) {
+                        Tile temp = this.board.tile(ncol,row);
+                        if (temp != null) {
+                            if (!vis[ncol] && temp.value() == Obj.value()) {
+                                this.board.move(ncol,row,Obj);
+                                changed = true;
+                                this.score += this.board.tile(ncol,row).value();
+                                vis[ncol] = true;
+                            } else {
+                                this.board.move(ncol - 1,row,Obj);
+                                if (ncol - 1 != col) {
+                                    changed = true;
+                                }
+                            }
+                            ifmove = true;
+                            break;
+                        }
+                    }
+                    if (!ifmove && col != n - 1) {
+                        this.board.move(n - 1,row,Obj);
+                        changed = true;
+                    }
+                }
+            }
+        }
 
         checkGameOver();
         if (changed) {
