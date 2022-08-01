@@ -155,7 +155,6 @@ public class Model extends Observable {
      * given a Tile object t, we get its value with t.value().
      */
     public static boolean maxTileExists(Board b) {
-        // TODO: Fill in this function.
         int n = b.size();
         for (int row = 0; row < n; row++) {
             for (int col = 0; col < n; col++) {
@@ -163,7 +162,7 @@ public class Model extends Observable {
                 if (temp == null) {
                     continue;
                 }
-                if (temp.value() == 2048) {
+                if (temp.value() == MAX_PIECE) {  //不要直接在代码中用常数
                     return true;
                 }
             }
@@ -178,7 +177,26 @@ public class Model extends Observable {
      * 2. There are two adjacent tiles with the same value.
      */
     public static boolean atLeastOneMoveExists(Board b) {
-        // TODO: Fill in this function.
+        int n = b.size();
+        for (int row = 0; row < n; row++) {
+            for (int col = 0; col < n; col++) {
+                Tile temp = b.tile(row,col);
+                if (temp == null)
+                    return true;
+                for (int dx = -1; dx <= 1; dx++) {
+                    for (int dy = -1; dy <= 1; dy++) {
+                        int nrow = row + dx,ncol = col + dy;
+                        int dist = Math.abs(nrow - row) + Math.abs(ncol - col);
+                        if (dist != 1 || nrow < 0 || nrow >= n || ncol < 0 || ncol >= n || (nrow == row && ncol == col) || b.tile(nrow,ncol) == null) {
+                            continue;
+                        }
+                        if (b.tile(nrow,ncol).value() == temp.value()) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
         return false;
     }
 
