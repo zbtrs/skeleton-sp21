@@ -2,7 +2,7 @@ package deque;
 
 import java.util.Iterator;
 
-public class LinkedListDeque<T> {
+public class LinkedListDeque<T> implements Deque<T>{
     public int size;
     public StuffNode obj,Presentinel,Lastsentinel;
 
@@ -26,13 +26,6 @@ public class LinkedListDeque<T> {
         Lastsentinel.val = item;
         Lastsentinel = Lastsentinel.last;
         size += 1;
-    }
-
-    public boolean isEmpty() {
-        if (size > 0) {
-            return false;
-        }
-        return true;
     }
 
     public int size() {

@@ -1,6 +1,6 @@
 package deque;
 
-public class ArrayDeque<T> {
+public class ArrayDeque<T> implements Deque<T> {
     private Object[] array;
     private int size,pre,last;
     public ArrayDeque() {
@@ -80,13 +80,6 @@ public class ArrayDeque<T> {
         size++;
         array[last] = item;
         last = movelast(last);
-    }
-
-    public boolean isEmpty() {
-        if (size > 0) {
-            return false;
-        }
-        return true;
     }
 
     public int size() {
