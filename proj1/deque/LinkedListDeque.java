@@ -1,7 +1,5 @@
 package deque;
 
-import net.sf.saxon.functions.PositionAndLast;
-
 import java.util.Iterator;
 
 public class LinkedListDeque<T> {
