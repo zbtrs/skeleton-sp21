@@ -25,18 +25,48 @@ public class ArrayDeque<T> {
         return x;
     }
 
-    private void resize(int sz) {
+
+    private void resizebig(int sz) {
         Object[] newarray = new Object[sz];
-        System.arraycopy(array,pre + 1,newarray,0,array.length - pre);
-        System.arraycopy(array,0,newarray,array.length - pre,pre);
+        System.arraycopy(array, pre + 1, newarray, 0, array.length - pre - 1);
+        System.arraycopy(array, 0, newarray, array.length - pre - 1, pre + 1);
         array = newarray;
         pre = sz - 1;
         last = size;
     }
 
+    private void resizesmall(int sz) {
+        Object[] newarray = new Object[sz];
+        if (pre < last) {
+            System.arraycopy(array,pre + 1,newarray,0,last - pre - 1);
+        } else {
+            System.arraycopy(array, pre + 1, newarray, 0, array.length - pre - 1);
+            System.arraycopy(array, 0, newarray, array.length - pre - 1, last);
+        }
+        array = newarray;
+        pre = sz - 1;
+        last = size;
+    }
+    /*
+    private void resize(int sz) {
+        Object[] newarray = new Object[sz];
+        if (pre < last && size < array.length) {
+            System.arraycopy(array,pre + 1,newarray,0,last - pre - 1);
+        } else if (size == array.length) {
+            System.arraycopy(array, pre + 1, newarray, 0, array.length - pre - 1);
+            System.arraycopy(array, 0, newarray, array.length - pre - 1, pre + 1);
+        } else {
+            System.arraycopy(array, pre + 1, newarray, 0, array.length - pre - 1);
+            System.arraycopy(array, 0, newarray, array.length - pre - 1, last);
+        }
+        array = newarray;
+        pre = sz - 1;
+        last = size;
+    }*/
+
     public void addFirst(T item) {
-        if (size == array.length) {
-            resize((int)(size * 1.01));
+        if (size >= array.length) {
+            resizebig((int)(size * 2));
         }
         size++;
         array[pre] = item;
@@ -44,8 +74,8 @@ public class ArrayDeque<T> {
     }
 
     public void addLast(T item) {
-        if (size == array.length) {
-            resize((int)(size * 1.01));
+        if (size >= array.length) {
+            resizebig((int)(size * 2));
         }
         size++;
         array[last] = item;
@@ -77,9 +107,12 @@ public class ArrayDeque<T> {
     }
 
     private void checksize() {
-        if (size * 4 <= array.length) {
-            resize(array.length / 4);
+
+        if (size < array.length / 4 && array.length / 4 >= 1) {
+            resizesmall(array.length / 4);
         }
+
+
     }
 
     public T removeFirst() {
