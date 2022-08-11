@@ -3,7 +3,7 @@ package bstmap;
 import java.util.Iterator;
 import java.util.Set;
 
-public class BSTMap<K extends Comparable,V> implements Map61B<K,V>{
+public class BSTMap<K extends Comparable<K>,V> implements Map61B<K,V>{
 
 
     private int size;
@@ -25,7 +25,7 @@ public class BSTMap<K extends Comparable,V> implements Map61B<K,V>{
         if (entry == null) {
             return false;
         }
-        if (entry.key() == key) {
+        if (entry.key().compareTo(key) == 0) {
             return true;
         }
         if (key.compareTo(entry.key()) < 0) {
@@ -64,25 +64,27 @@ public class BSTMap<K extends Comparable,V> implements Map61B<K,V>{
         return size;
     }
 
-    private void putVal(Entry entry,K key, V val) {
+    private Entry putVal(Entry entry,K key, V val) {
         if (entry == null) {
-            entry = new Entry(key,val);
-            return;
+            size++;
+            return new Entry(key,val);
         }
         if (entry.key().compareTo(key) == 0) {
             entry.put(val);
-            return;
+            return entry;
         }
         if (key.compareTo(entry.key()) < 0) {
-            putVal(entry.lson(),key,val);
+            entry.lson = putVal(entry.lson(),key,val);
+            return entry;
         } else {
-            putVal(entry.rson(),key,val);
+            entry.rson = putVal(entry.rson(),key,val);
+            return entry;
         }
     }
 
     @Override
     public void put(K key, V value) {
-        putVal(entry,key,value);
+        entry = putVal(entry,key,value);
     }
 
     @Override
