@@ -104,9 +104,37 @@ public class BSTMap<K extends Comparable<K>,V> implements Map61B<K,V>{
         return result;
     }
 
+    private Entry findNode(Entry entry,K key) {
+        if (entry == null) {
+            return null;
+        }
+        if (entry.key().compareTo(key) == 0) {
+            return entry;
+        }
+        if (key.compareTo(entry.key()) < 0) {
+            return findNode(entry.lson(),key);
+        }
+        return findNode(entry.rson(),key);
+    }
+
     @Override
     public V remove(K key) {
-        throw new UnsupportedOperationException();
+        //throw new UnsupportedOperationException();
+        Entry node = findNode(entry,key);
+        if (node == null) {
+            return null;
+        }
+        //size
+        size -= 1;
+        V result = node.val;
+        if (node.lson() == null && node.rson() == null) {
+            node = null;
+            return result;
+        }
+        if (node.lson() == null && node.rson() != null) {
+            node = node.rson();
+            return result;
+        }
     }
 
     @Override
@@ -116,7 +144,7 @@ public class BSTMap<K extends Comparable<K>,V> implements Map61B<K,V>{
 
     @Override
     public Iterator<K> iterator() {
-        throw new UnsupportedOperationException();
+        return keySet().iterator();
     }
 
     private class Entry {
