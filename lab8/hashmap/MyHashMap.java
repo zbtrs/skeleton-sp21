@@ -15,7 +15,7 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
     public void clear() {
         size = 0;
         for (int i = 0; i < initialSize; i++) {
-            buckets[i] = null;
+            buckets[i] = createBucket();
         }
     }
 
@@ -228,7 +228,5 @@ public class MyHashMap<K, V> implements Map61B<K, V> {
         return null;
     }
 
-    // TODO: Implement the methods of the Map61B Interface below
-    // Your code won't compile until you do so!
 
 }
