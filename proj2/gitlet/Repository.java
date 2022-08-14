@@ -1,6 +1,8 @@
 package gitlet;
 
 import java.io.File;
+import java.io.IOException;
+
 import static gitlet.Utils.*;
 
 // TODO: any imports you need here
@@ -9,7 +11,7 @@ import static gitlet.Utils.*;
  *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *
- *  @author TODO
+ * @author zbtrs
  */
 public class Repository {
     /**
@@ -20,10 +22,51 @@ public class Repository {
      * variable is used. We've provided two examples for you.
      */
 
+
     /** The current working directory. */
     public static final File CWD = new File(System.getProperty("user.dir"));
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
 
     /* TODO: fill in the rest of this class. */
+
+    public void load() {
+        //TODO 读取之前存储的信息
+    }
+    public void init(){
+        if (GITLET_DIR.exists() && GITLET_DIR.isDirectory()) {
+            Utils.message("A Gitlet version-control system already exists in the current directory.");
+            System.exit(0);
+        }
+        GITLET_DIR.mkdir();
+        //当前工作目录中记录HEAD指针指向的commit的hashID,等到第一次commit后再写入内容
+        File HEAD = join(CWD,"HEAD");
+        //创建HEAD文件
+        try {
+            HEAD.createNewFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        //TODO 创建一个initial commit
+    }
+
+    public void add(String filename) {
+        if (!GITLET_DIR.exists() || !GITLET_DIR.isDirectory()) {
+            Utils.message("Not in an initialized Gitlet directory.");
+            System.exit(0);
+        }
+        //如果是第一次调用add操作，创建对应的文件夹
+        File adddir = join(GITLET_DIR,"cache");
+        if (!adddir.exists()) {
+            adddir.mkdir();
+        }
+        File obj = join(CWD,filename);
+        //如果要添加的文件不存在
+        if (!obj.exists()) {
+            Utils.message("File does not exist.");
+            System.exit(0);
+        }
+
+    }
+
 }
