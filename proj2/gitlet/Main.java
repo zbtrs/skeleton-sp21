@@ -15,8 +15,8 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        test();
-        /*
+        //test();
+
         if (args.length == 0) {
             Utils.message("Please enter a command.");
             System.exit(0);
@@ -26,7 +26,6 @@ public class Main {
         String firstArg = args[0];
         switch(firstArg) {
             case "init":
-                // TODO: handle the `init` command
                 if (args.length != 1) {
                     Utils.message("Incorrect operands.");
                     System.exit(0);
@@ -34,16 +33,21 @@ public class Main {
                 object.init();
                 break;
             case "add":
-                // TODO: handle the `add [filename]` command
                 if (args.length != 2) {
                     Utils.message("Incorrect operands.");
                     System.exit(0);
                 }
                 object.add(args[1]);
                 break;
+            case "commit":
+                if (args.length != 2) {
+                    Utils.message("Incorrect operands.");
+                    System.exit(0);
+                }
+                object.commit(args[1]);
+                break;
             // TODO: FILL THE REST IN
         }
 
-         */
     }
 }

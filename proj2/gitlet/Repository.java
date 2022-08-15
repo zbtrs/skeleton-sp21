@@ -21,6 +21,7 @@ public class Repository {
      * comment above them describing what that variable represents and how that
      * variable is used. We've provided two examples for you.
      */
+    
 
 
     /** The current working directory. */
@@ -30,9 +31,6 @@ public class Repository {
 
     /* TODO: fill in the rest of this class. */
 
-    public void load() {
-        //TODO 读取之前存储的信息
-    }
     public void init(){
         if (GITLET_DIR.exists() && GITLET_DIR.isDirectory()) {
             Utils.message("A Gitlet version-control system already exists in the current directory.");
@@ -60,12 +58,31 @@ public class Repository {
         if (!adddir.exists()) {
             adddir.mkdir();
         }
+
         File obj = join(CWD,filename);
         //如果要添加的文件不存在
         if (!obj.exists()) {
             Utils.message("File does not exist.");
             System.exit(0);
         }
+
+        //读入要存入缓存区的文件
+        Blob objfile = new Blob(obj);
+        //TODO 和当前commit的同名的文件进行比较，如果完全相等则将缓存区中对应的文件给删除并且这次操作不要add对应的文件
+
+        //在缓存区写入文件
+        File obj2 = join(GITLET_DIR,"cache",objfile.SHA1());
+        if (!obj2.exists()) {
+            try {
+                obj2.createNewFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        Utils.writeObject(obj2,objfile);
+    }
+
+    public void commit(String message) {
 
     }
 

@@ -11,4 +11,8 @@ public class Blob implements Serializable {
         SHA1 = Utils.sha1(contents);
     }
 
+    public String SHA1() {
+        return SHA1;
+    }
+
 }
