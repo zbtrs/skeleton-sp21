@@ -84,11 +84,6 @@ public class Repository {
             Utils.message("Not in an initialized Gitlet directory.");
             System.exit(0);
         }
-        //如果是第一次调用add操作，创建对应的文件夹
-        File adddir = join(GITLET_DIR,"cache");
-        if (!adddir.exists()) {
-            adddir.mkdir();
-        }
 
         File obj = join(CWD,filename);
         //如果要添加的文件不存在
@@ -100,6 +95,12 @@ public class Repository {
         //读入要存入缓存区的文件
         Blob objfile = new Blob(obj);
         //TODO 和当前commit的同名的文件进行比较，如果完全相等则将缓存区中对应的文件给删除并且这次操作不要add对应的文件
+        config.readHEAD();
+        Commit currentcommit = Utils.readObject(join(GITLET_DIR,config.HEAD),Commit.class);
+        if (currentcommit.containblob(objfile)) {
+            //TODO 删除缓冲区中相同的文件
+        }
+        //TODO 将文件写入到Cache区并且更新Config中的一些数据结构
 
         //在缓存区写入文件
         File obj2 = join(GITLET_DIR,"cache",objfile.SHA1());
@@ -111,6 +112,8 @@ public class Repository {
             }
         }
         Utils.writeObject(obj2,objfile);
+
+        //TODO 保存config
     }
 
     //commit信息都存储在.gitlet/refs中，HEAD,branchs,commits等信息存储在.gitlet中
@@ -126,7 +129,6 @@ public class Repository {
             System.exit(0);
         }
 
-        //TODO 读取当前分支/HEAD
         //首先读取head,即当前head指向的commit的sha1,根据这个sha1在对应文件夹中找到指定commit文件,创建一个新的commit
         config.readHEAD();
         String nowbranch = config.getnowbranch();

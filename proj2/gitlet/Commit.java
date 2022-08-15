@@ -57,6 +57,10 @@ public class Commit implements Serializable{
         obj.createDate = date;
         obj.parentcommit = parentid;
     }
+
+    public boolean containblob(Blob item) {
+        return obj.blobs.contains(item);
+    }
     public String getSHA1() {
         SHA1 = Utils.sha1(obj);
         return SHA1;
