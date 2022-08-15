@@ -42,5 +42,9 @@ public class Commit {
         return SHA1;
     }
 
+    public boolean contain(String item) {
+        return obj.blobs.contains(item);
+    }
+
     /* TODO: fill in the rest of this class. */
 }

@@ -8,12 +8,13 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static gitlet.Utils.createfile;
 import static gitlet.Utils.join;
 
 public class Config {
     public Map<String, File> commit2file = new HashMap<>();
     public Map<String,File> branch2commit = new HashMap<>();
-    public Set<File> caches = new HashSet<>();
+    public Set<String> caches = new HashSet<>();
 
     public File HEADfile = join(Repository.GITLET_DIR,"HEAD");
     public File commits = join(Repository.GITLET_DIR,"commits");
@@ -21,13 +22,6 @@ public class Config {
     public File cachesfile = join(Repository.GITLET_DIR,"caches");
     public String HEAD;
 
-    public void createfile(File obj) {
-        try {
-            obj.createNewFile();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public void loadcaches() {
         if (!cachesfile.exists()) {

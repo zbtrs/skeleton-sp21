@@ -136,6 +136,14 @@ class Utils {
         }
     }
 
+    public static void createfile(File obj) {
+        try {
+            obj.createNewFile();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /** Return an object of type T read from FILE, casting it to EXPECTEDCLASS.
      *  Throws IllegalArgumentException in case of problems. */
     static <T extends Serializable> T readObject(File file,

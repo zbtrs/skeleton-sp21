@@ -29,8 +29,8 @@ public class Repository {
     public static final File CWD = new File(System.getProperty("user.dir"));
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
-
     public static final File REFS_DIR = join(GITLET_DIR,"refs");
+    public static final File BLOBS_DIR = join(GITLET_DIR,"blobs");
     public Config config;
 
 
@@ -53,6 +53,9 @@ public class Repository {
 
         if (!REFS_DIR.exists()) {
             REFS_DIR.mkdir();
+        }
+        if (!BLOBS_DIR.exists()) {
+            BLOBS_DIR.mkdir();
         }
 
         //TODO 创建一个initial commit
@@ -109,7 +112,14 @@ public class Repository {
         config.readHEAD();
         File headfile = join(REFS_DIR,config.HEAD);
         Commit newcommit = new Commit(config.HEAD,headfile,message, date);
+        for (String item : config.caches) {
+            if (newcommit.contain(item)) {
+                //如果commit中原来就包含了这个blobs,那么就需要更新
 
+            } else {
+                //如果没有包含，则需要添加
+            }
+        }
 
     }
 
