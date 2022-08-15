@@ -31,10 +31,24 @@ public class Repository {
     public static final File GITLET_DIR = join(CWD, ".gitlet");
     public static final File REFS_DIR = join(GITLET_DIR,"refs");
     public static final File BLOBS_DIR = join(GITLET_DIR,"blobs");
+    public static final File CACHE_DIR = join(GITLET_DIR,"caches");
     public Config config;
 
 
     /* TODO: fill in the rest of this class. */
+
+    private void initialcommit() {
+        Commit newcommit = new Commit("initial commit",new Date(0));
+        File newcommitfile = join(REFS_DIR,newcommit.SHA1());
+        createfile(newcommitfile);
+        config.HEAD = newcommit.SHA1();
+        config.updatecommit(newcommit,newcommitfile);
+        String nowbranch = "master";
+        config.updatebranch(nowbranch,newcommitfile);
+        config.setnowbranch(nowbranch);
+
+        config.store();
+    }
 
     public void init(){
         if (GITLET_DIR.exists() && GITLET_DIR.isDirectory()) {
@@ -50,15 +64,19 @@ public class Repository {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
+        //先把各个文件夹给创建好
         if (!REFS_DIR.exists()) {
             REFS_DIR.mkdir();
         }
         if (!BLOBS_DIR.exists()) {
             BLOBS_DIR.mkdir();
         }
+        if (!CACHE_DIR.exists()) {
+            CACHE_DIR.mkdir();
+        }
+        config.init();
 
-        //TODO 创建一个initial commit
+        initialcommit();
     }
 
     public void add(String filename) {
@@ -108,19 +126,37 @@ public class Repository {
             System.exit(0);
         }
 
+        //TODO 读取当前分支/HEAD
         //首先读取head,即当前head指向的commit的sha1,根据这个sha1在对应文件夹中找到指定commit文件,创建一个新的commit
         config.readHEAD();
+        String nowbranch = config.getnowbranch();
         File headfile = join(REFS_DIR,config.HEAD);
         Commit newcommit = new Commit(config.HEAD,headfile,message, date);
         for (String item : config.caches) {
+            File temp = join(CACHE_DIR,item);
+            Blob cacheblob = new Blob(temp);
             if (newcommit.contain(item)) {
                 //如果commit中原来就包含了这个blobs,那么就需要更新
-
+                //如何计算得到这个blob的hash值呢？
+                //在新的commit的set中把原来的blob给删掉替换上新的blob
+                newcommit.updateblob(item,cacheblob);
             } else {
                 //如果没有包含，则需要添加
+                newcommit.additem(item,cacheblob);
             }
+            temp = join(BLOBS_DIR,cacheblob.SHA1());
+            Utils.createfile(temp);
+            Utils.writeContents(temp,cacheblob.contents());
         }
+        config.caches.clear();
 
+        newcommit.update();
+        File newcommitfile = join(REFS_DIR,newcommit.SHA1());
+        Utils.createfile(newcommitfile);
+        config.updatecommit(newcommit,newcommitfile);
+        config.updatebranch(nowbranch,newcommitfile);
+
+        config.store();
     }
 
 }

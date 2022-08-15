@@ -15,4 +15,8 @@ public class Blob implements Serializable {
         return SHA1;
     }
 
+    public String contents() {
+        return contents;
+    }
+
 }
