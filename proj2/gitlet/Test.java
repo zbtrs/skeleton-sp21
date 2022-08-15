@@ -3,6 +3,7 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Date;
 
 import static gitlet.Utils.join;
 
@@ -33,5 +34,12 @@ public class Test implements Serializable{
             throw new RuntimeException(e);
         }
         Utils.writeContents(temp2,tempp);
+    }
+
+    public static void test2() {
+        Date temp = new Date();
+        System.out.println(temp);
+        Date temp2 = new Date(0);
+        System.out.println(temp2);
     }
 }

@@ -1,5 +1,7 @@
 package gitlet;
 
+import java.util.Date;
+
 /** Driver class for Gitlet, a subset of the Git version-control system.
  *  @author TODO
  */
@@ -15,14 +17,14 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        //test();
+        //Test.test2();
 
         if (args.length == 0) {
             Utils.message("Please enter a command.");
             System.exit(0);
         }
         Repository object = new Repository();
-        object.load();
+        //object.load();
         String firstArg = args[0];
         switch(firstArg) {
             case "init":
@@ -44,10 +46,12 @@ public class Main {
                     Utils.message("Incorrect operands.");
                     System.exit(0);
                 }
-                object.commit(args[1]);
+                object.commit(args[1],new Date());
                 break;
             // TODO: FILL THE REST IN
         }
+
+
 
     }
 }

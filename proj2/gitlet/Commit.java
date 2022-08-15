@@ -1,8 +1,9 @@
 package gitlet;
 
-// TODO: any imports you need here
-
-import java.util.Date; // TODO: You'll likely use this in this class
+import java.io.File;
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Set;
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -20,7 +21,26 @@ public class Commit {
      */
 
     /** The message of this Commit. */
-    private String message;
+    private String SHA1;
+    private commitcontents obj;
+    private class commitcontents implements Serializable {
+        private String message,parentcommit;
+        private Date createDate;
+        private Set<String> blobs;
+
+
+    }
+
+    public Commit(String parentid,File parentcommit,String message,Date date) {
+        obj = Utils.readObject(parentcommit,commitcontents.class);
+        obj.message = message;
+        obj.createDate = date;
+        obj.parentcommit = parentid;
+    }
+    public String getSHA1() {
+        SHA1 = Utils.sha1(obj);
+        return SHA1;
+    }
 
     /* TODO: fill in the rest of this class. */
 }

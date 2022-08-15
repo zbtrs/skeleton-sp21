@@ -2,6 +2,7 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 
 import static gitlet.Utils.*;
 
@@ -29,6 +30,10 @@ public class Repository {
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
 
+    public static final File REFS_DIR = join(GITLET_DIR,"refs");
+    public Config config;
+
+
     /* TODO: fill in the rest of this class. */
 
     public void init(){
@@ -45,6 +50,11 @@ public class Repository {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+
+        if (!REFS_DIR.exists()) {
+            REFS_DIR.mkdir();
+        }
+
         //TODO 创建一个initial commit
     }
 
@@ -82,7 +92,24 @@ public class Repository {
         Utils.writeObject(obj2,objfile);
     }
 
-    public void commit(String message) {
+    //commit信息都存储在.gitlet/refs中，HEAD,branchs,commits等信息存储在.gitlet中
+    public void commit(String message,Date date) {
+        //检查错误情况:缓存区中没有文件
+        config.loadcaches();
+        if (config.caches.isEmpty()) {
+            Utils.message("No changes added to the commit.");
+            System.exit(0);
+        }
+        if (message.equals("")) {
+            Utils.message("Please enter a commit message.");
+            System.exit(0);
+        }
+
+        //首先读取head,即当前head指向的commit的sha1,根据这个sha1在对应文件夹中找到指定commit文件,创建一个新的commit
+        config.readHEAD();
+        File headfile = join(REFS_DIR,config.HEAD);
+        Commit newcommit = new Commit(config.HEAD,headfile,message, date);
+
 
     }
 
