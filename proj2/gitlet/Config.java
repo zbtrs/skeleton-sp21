@@ -20,13 +20,22 @@ public class Config {
     private final File branchs = join(Repository.GITLET_DIR,"branchs");
     private final File cachesfile = join(Repository.GITLET_DIR,"caches");
     private final File nowbranch = join(Repository.GITLET_DIR,"nowbranch");
-    public String HEAD;
+    public String HEAD,branch;
+
+    public void load() {
+        commit2file = Utils.readObject(commits,HashMap.class);
+        branch2commit = Utils.readObject(branchs,HashMap.class);
+        caches = Utils.readObject(cachesfile,HashSet.class);
+        HEAD = Utils.readContentsAsString(HEADfile);
+        branch = Utils.readContentsAsString(nowbranch);
+    }
 
     public void store() {
         Utils.writeObject(commits, (Serializable) commit2file);
         Utils.writeObject(branchs,(Serializable) branch2commit);
-        Utils.writeContents(HEADfile,HEAD);
         Utils.writeObject(cachesfile, (Serializable) caches);
+        Utils.writeContents(HEADfile,HEAD);
+        Utils.writeContents(nowbranch,branch);
     }
     public void init() {
         createfile(HEADfile);
@@ -49,16 +58,6 @@ public class Config {
             createfile(cachesfile);
         }
         caches = Utils.readObject(cachesfile,HashSet.class);
-    }
-    public void load() {
-        if (!commits.exists()) {
-            createfile(commits);
-        }
-        if (!branchs.exists()) {
-            createfile(branchs);
-        }
-        commit2file = Utils.readObject(commits,HashMap.class);
-        branch2commit = Utils.readObject(branchs,HashMap.class);
     }
 
     public void readHEAD() {

@@ -38,6 +38,7 @@ public class Repository {
     /* TODO: fill in the rest of this class. */
 
     private void initialcommit() {
+        config.load();
         Commit newcommit = new Commit("initial commit",new Date(0));
         File newcommitfile = join(REFS_DIR,newcommit.SHA1());
         createfile(newcommitfile);
@@ -46,7 +47,6 @@ public class Repository {
         String nowbranch = "master";
         config.updatebranch(nowbranch,newcommitfile);
         config.setnowbranch(nowbranch);
-
         config.store();
     }
 
@@ -75,7 +75,6 @@ public class Repository {
             CACHE_DIR.mkdir();
         }
         config.init();
-
         initialcommit();
     }
 
@@ -95,31 +94,27 @@ public class Repository {
         //读入要存入缓存区的文件
         Blob objfile = new Blob(obj);
         //TODO 和当前commit的同名的文件进行比较，如果完全相等则将缓存区中对应的文件给删除并且这次操作不要add对应的文件
-        config.readHEAD();
+        config.load();
         Commit currentcommit = Utils.readObject(join(GITLET_DIR,config.HEAD),Commit.class);
         if (currentcommit.containblob(objfile)) {
+            //如果当前的commit中包含了这个文件，就要删除缓冲区中同名的文件
+
             //TODO 删除缓冲区中相同的文件
         }
         //TODO 将文件写入到Cache区并且更新Config中的一些数据结构
 
         //在缓存区写入文件
         File obj2 = join(GITLET_DIR,"cache",objfile.SHA1());
-        if (!obj2.exists()) {
-            try {
-                obj2.createNewFile();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
+        createfile(obj2);
         Utils.writeObject(obj2,objfile);
 
-        //TODO 保存config
+        config.store();
     }
 
     //commit信息都存储在.gitlet/refs中，HEAD,branchs,commits等信息存储在.gitlet中
     public void commit(String message,Date date) {
         //检查错误情况:缓存区中没有文件
-        config.loadcaches();
+        config.load();
         if (config.caches.isEmpty()) {
             Utils.message("No changes added to the commit.");
             System.exit(0);
@@ -130,14 +125,14 @@ public class Repository {
         }
 
         //首先读取head,即当前head指向的commit的sha1,根据这个sha1在对应文件夹中找到指定commit文件,创建一个新的commit
-        config.readHEAD();
-        String nowbranch = config.getnowbranch();
+        String nowbranch = config.branch;
         File headfile = join(REFS_DIR,config.HEAD);
         Commit newcommit = new Commit(config.HEAD,headfile,message, date);
         for (String item : config.caches) {
             File temp = join(CACHE_DIR,item);
             Blob cacheblob = new Blob(temp);
             if (newcommit.contain(item)) {
+                //TODO 改变暂存区文件遍历方式
                 //如果commit中原来就包含了这个blobs,那么就需要更新
                 //如何计算得到这个blob的hash值呢？
                 //在新的commit的set中把原来的blob给删掉替换上新的blob
