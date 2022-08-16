@@ -165,4 +165,39 @@ public class Repository {
         }
         //TODO 有合并的情况
     }
+    /**
+     * 将commitid中的filename这个文件写到工作区中
+     * opt为0表示当前commit,为1表示指定了commitid
+     */
+    public void checkoutfile(String commitid,String filename,int opt) {
+
+        config.load();
+        if (opt == 0) {
+            commitid = config.HEAD;
+        }
+        File commitfile = join(REFS_DIR,commitid);
+        if (!commitfile.exists()) {
+            Utils.message("No commit with that id exists.");
+            System.exit(0);
+        }
+
+        Commit commit = Utils.readObject(join(REFS_DIR,commitid),Commit.class);
+        if (!commit.contain(filename)) {
+            Utils.message("File does not exist in that commit.");
+            System.exit(0);
+        }
+        String filesha1 = commit.getblobsha1(filename);
+        Blob objfile = new Blob(join(BLOBS_DIR,filesha1));
+        File CWDfile = join(CWD,filename);
+        if (!CWDfile.exists()) {
+            createfile(CWDfile);
+        }
+        Utils.writeContents(CWDfile,objfile.contents());
+
+    }
+
+    public void checkoutbranch(String branchname) {
+        //TODO
+        //throw new IllegalArgumentException();
+    }
 }

@@ -56,7 +56,30 @@ public class Main {
                 }
                 object.log();
                 break;
-            // TODO: FILL THE REST IN
+            case "checkout":
+                if (args.length <= 1 || args.length > 4) {
+                    Utils.message("Incorrect operands.");
+                    System.exit(0);
+                }
+                if (args.length == 3) {
+                    if (args[1] != "--") {
+                        Utils.message("Incorrect operands.");
+                        System.exit(0);
+                    }
+                    object.checkoutfile("current file",args[2],0);
+                }
+
+                if (args.length == 4) {
+                    if (args[2] != "--") {
+                        Utils.message("Incorrect operands.");
+                        System.exit(0);
+                    }
+                    object.checkoutfile(args[1],args[3],1);
+                }
+                if (args.length == 2) {
+                    object.checkoutbranch(args[1]);
+                }
+                break;
         }
 
 

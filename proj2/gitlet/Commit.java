@@ -47,6 +47,10 @@ public class Commit implements Serializable{
         return obj.parentcommit;
     }
 
+    public String getblobsha1(String filename) {
+        return blobsha1.get(filename);
+    }
+
     private class commitcontents implements Serializable {
         private String message,parentcommit;
         private Date createDate;
