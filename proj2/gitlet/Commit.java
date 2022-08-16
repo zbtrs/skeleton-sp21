@@ -120,6 +120,10 @@ public class Commit implements Serializable{
         blobsha1.put(item,newblob.SHA1());
     }
 
+    public String getblobsha1(String blobname) {
+        return blobsha1.get(blobname);
+    }
+
     public void updateblob(String name,Blob newblob) {
         //通过blob的名字得到对应的SHA1
         String oldblobsha1 = blobsha1.get(name);
