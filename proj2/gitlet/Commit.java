@@ -27,6 +27,26 @@ public class Commit implements Serializable{
     private commitcontents obj;
     private Set<String> blobnames;
     private Map<String,String> blobsha1;
+
+    public boolean equalinitial() {
+        if (obj.parentcommit.equals("")) {
+            return true;
+        }
+        return false;
+    }
+
+    public void print() {
+        System.out.println("===");
+        System.out.format("commit %s\n",SHA1);
+        System.out.format("Date: %s\n",obj.createDate.toString());
+        System.out.format("%s\n",obj.message);
+        System.out.println();
+    }
+
+    public String parent() {
+        return obj.parentcommit;
+    }
+
     private class commitcontents implements Serializable {
         private String message,parentcommit;
         private Date createDate;

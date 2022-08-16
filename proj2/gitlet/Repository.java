@@ -129,8 +129,6 @@ public class Repository {
             Blob cacheblob = new Blob(temp);
             if (newcommit.contain(item)) {
                 //如果commit中原来就包含了这个blobs,那么就需要更新
-                //如何计算得到这个blob的hash值呢？
-                //在新的commit的set中把原来的blob给删掉替换上新的blob
                 newcommit.updateblob(item,cacheblob);
             } else {
                 //如果没有包含，则需要添加
@@ -144,7 +142,6 @@ public class Repository {
             temp.delete();
         }
         config.caches.clear();
-        //TODO:删除caches文件夹中的文件
         newcommit.update();
         File newcommitfile = join(REFS_DIR,newcommit.SHA1());
         Utils.createfile(newcommitfile);
@@ -155,4 +152,17 @@ public class Repository {
         config.store();
     }
 
+    public void log() {
+        config.load();
+        Commit commit = Utils.readObject(join(REFS_DIR,config.HEAD),Commit.class);
+        while (true) {
+            commit.print();
+            if (!commit.equalinitial()) {
+                commit = Utils.readObject(join(REFS_DIR,commit.parent()),Commit.class);
+            } else {
+                break;
+            }
+        }
+        //TODO 有合并的情况
+    }
 }

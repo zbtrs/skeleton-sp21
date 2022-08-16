@@ -49,6 +49,13 @@ public class Main {
                 }
                 object.commit(args[1],new Date());
                 break;
+            case "log":
+                if (args.length != 1) {
+                    Utils.message("Incorrect operands.");
+                    System.exit(0);
+                }
+                object.log();
+                break;
             // TODO: FILL THE REST IN
         }
 
