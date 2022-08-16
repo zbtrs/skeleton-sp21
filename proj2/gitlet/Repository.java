@@ -44,6 +44,7 @@ public class Repository {
         Commit newcommit = new Commit("initial commit",new Date(0));
         File newcommitfile = join(REFS_DIR,newcommit.SHA1());
         createfile(newcommitfile);
+        Utils.writeObject(newcommitfile,newcommit);
         config.HEAD = newcommit.SHA1();
         config.updatecommit(newcommit,newcommitfile);
         config.updatebranch("master",newcommitfile);
@@ -88,19 +89,21 @@ public class Repository {
         Blob objfile = new Blob(obj);
         config.load();
         //根据HEAD找到最新的commit
-        Commit currentcommit = Utils.readObject(join(GITLET_DIR,config.HEAD),Commit.class);
+        Commit currentcommit = Utils.readObject(join(REFS_DIR,config.HEAD),Commit.class);
         if (currentcommit.containblob(objfile)) {
             //如果当前的commit中包含了这个文件，就要删除缓冲区中同名的文件
             config.removecache(filename);
+            join(CACHE_DIR,filename).delete();
+        } else {
+            //在缓存区写入文件
+            File objincache = join(CACHE_DIR, filename);
+            if (!objincache.exists()) {
+                createfile(objincache);
+            }
+            Utils.writeContents(objincache, objfile.contents());
+            //更新config
+            config.addcache(filename);
         }
-        //在缓存区写入文件
-        File objincache = join(CACHE_DIR,filename);
-        if (!objincache.exists()) {
-            createfile(objincache);
-        }
-        Utils.writeContents(objincache,objfile.contents());
-        //更新config
-        config.addcache(filename);
         config.store();
     }
 
@@ -134,15 +137,18 @@ public class Repository {
                 newcommit.additem(item,cacheblob);
             }
             //将暂存区的blob写入到BLOBS_DIR中，用SHA1作为文件名，并且只写入blob中的文本内容
-            temp = join(BLOBS_DIR,cacheblob.SHA1());
-            Utils.createfile(temp);
-            Utils.writeContents(temp,cacheblob.contents());
+            File blob2dir = join(BLOBS_DIR,cacheblob.SHA1());
+            Utils.createfile(blob2dir);
+            Utils.writeContents(blob2dir,cacheblob.contents());
+
+            temp.delete();
         }
         config.caches.clear();
-
+        //TODO:删除caches文件夹中的文件
         newcommit.update();
         File newcommitfile = join(REFS_DIR,newcommit.SHA1());
         Utils.createfile(newcommitfile);
+        Utils.writeObject(newcommitfile,newcommit);
         config.updatecommit(newcommit,newcommitfile);
         config.updatebranch(nowbranch,newcommitfile);
         config.HEAD = newcommit.SHA1();

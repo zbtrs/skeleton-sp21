@@ -17,12 +17,15 @@ public class Main {
     }
 
     public static void main(String[] args) {
+        /*
         if (args.length == 0) {
             Utils.message("Please enter a command.");
             System.exit(0);
         }
+        */
         Repository object = new Repository();
-        //object.load();
+        //object.add("test2.txt");
+
         String firstArg = args[0];
         switch(firstArg) {
             case "init":
@@ -48,6 +51,8 @@ public class Main {
                 break;
             // TODO: FILL THE REST IN
         }
+
+
 
 
 

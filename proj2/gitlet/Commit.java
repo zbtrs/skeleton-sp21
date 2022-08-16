@@ -72,15 +72,28 @@ public class Commit implements Serializable{
     }
 
     public boolean containblob(Blob item) {
-        return obj.blobs.contains(item);
+        for (Blob blob : obj.blobs) {
+            if (blob.SHA1().equals(item.SHA1())) {
+                return true;
+            }
+        }
+        return false;
+        //return obj.blobs.contains(item);
     }
     public boolean contain(String item) {
-        return blobnames.contains(item);
+        for (String blobname : blobnames) {
+            if (blobname.equals(item)) {
+                return true;
+            }
+        }
+        return false;
+        //return blobnames.contains(item);
     }
 
     public void additem(String item,Blob newblob) {
         blobnames.add(item);
         obj.blobs.add(newblob);
+        blobsha1.put(item,newblob.SHA1());
     }
 
     public void updateblob(String name,Blob newblob) {
@@ -88,7 +101,7 @@ public class Commit implements Serializable{
         String oldblobsha1 = blobsha1.get(name);
         File oldblobfile = join(Repository.BLOBS_DIR,oldblobsha1);
         //从BLOBS_DIR中读取原来blob
-        Blob oldblob = Utils.readObject(oldblobfile,Blob.class);
+        Blob oldblob = new Blob(oldblobfile);
         obj.update(oldblob,newblob);
         blobsha1.put(name,newblob.SHA1());
     }
