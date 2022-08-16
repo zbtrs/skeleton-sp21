@@ -45,6 +45,19 @@ public class Config {
         createfile(nowbranch);
     }
 
+    public void removecache(String filename) {
+        if (caches.contains(filename)) {
+            caches.remove(filename);
+        }
+    }
+
+    public void addcache(String filename) {
+        if (caches.contains(filename)) {
+            return;
+        }
+        caches.add(filename);
+    }
+
     public void updatecommit(Commit newcommit,File newcommitfile) {
         commit2file.put(newcommit.SHA1(),newcommitfile);
     }

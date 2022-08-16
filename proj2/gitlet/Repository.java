@@ -93,21 +93,20 @@ public class Repository {
 
         //读入要存入缓存区的文件
         Blob objfile = new Blob(obj);
-        //TODO 和当前commit的同名的文件进行比较，如果完全相等则将缓存区中对应的文件给删除并且这次操作不要add对应的文件
         config.load();
         Commit currentcommit = Utils.readObject(join(GITLET_DIR,config.HEAD),Commit.class);
         if (currentcommit.containblob(objfile)) {
             //如果当前的commit中包含了这个文件，就要删除缓冲区中同名的文件
-
-            //TODO 删除缓冲区中相同的文件
+            config.removecache(filename);
         }
-        //TODO 将文件写入到Cache区并且更新Config中的一些数据结构
-
         //在缓存区写入文件
-        File obj2 = join(GITLET_DIR,"cache",objfile.SHA1());
-        createfile(obj2);
-        Utils.writeObject(obj2,objfile);
+        File objincache = join(CACHE_DIR,filename);
+        if (!objincache.exists()) {
+            createfile(objincache);
+        }
+        Utils.writeObject(objincache,objfile);
 
+        config.addcache(filename);
         config.store();
     }
 
@@ -132,7 +131,6 @@ public class Repository {
             File temp = join(CACHE_DIR,item);
             Blob cacheblob = new Blob(temp);
             if (newcommit.contain(item)) {
-                //TODO 改变暂存区文件遍历方式
                 //如果commit中原来就包含了这个blobs,那么就需要更新
                 //如何计算得到这个blob的hash值呢？
                 //在新的commit的set中把原来的blob给删掉替换上新的blob
