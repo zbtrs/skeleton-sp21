@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.*;
 
 import static gitlet.Utils.join;
+import static gitlet.Utils.sha1;
 
 /** Represents a gitlet commit object.
  *  TODO: It's a good idea to give a description here of what else this Class
@@ -35,16 +36,28 @@ public class Commit implements Serializable{
             blobs.remove(oldblob);
             blobs.add(newblob);
         }
+
+        public String getsha1() {
+            List<Object> sha1list = new ArrayList<>();
+            sha1list.add(message);
+            sha1list.add(parentcommit);
+            sha1list.add(createDate.toString());
+            for (Blob item : blobs) {
+                sha1list.add(item.SHA1());
+            }
+            return sha1(sha1list);
+        }
     }
 
     public Commit(String message,Date date) {
         blobnames = new HashSet<>();
         blobsha1 = new HashMap<>();
+        obj = new commitcontents();
         obj.message = message;
         obj.parentcommit = "";
         obj.createDate = date;
         obj.blobs = new HashSet<>();
-        SHA1 = Utils.sha1(obj);
+        SHA1 = obj.getsha1();
     }
 
     public Commit(String parentid,File parentcommit,String message,Date date) {
@@ -61,11 +74,6 @@ public class Commit implements Serializable{
     public boolean containblob(Blob item) {
         return obj.blobs.contains(item);
     }
-    public String getSHA1() {
-        SHA1 = Utils.sha1(obj);
-        return SHA1;
-    }
-
     public boolean contain(String item) {
         return blobnames.contains(item);
     }
@@ -76,15 +84,17 @@ public class Commit implements Serializable{
     }
 
     public void updateblob(String name,Blob newblob) {
+        //通过blob的名字得到对应的SHA1
         String oldblobsha1 = blobsha1.get(name);
         File oldblobfile = join(Repository.BLOBS_DIR,oldblobsha1);
+        //从BLOBS_DIR中读取原来blob
         Blob oldblob = Utils.readObject(oldblobfile,Blob.class);
         obj.update(oldblob,newblob);
         blobsha1.put(name,newblob.SHA1());
     }
 
     public void update() {
-        SHA1 = Utils.sha1(obj);
+        SHA1 = obj.getsha1();
     }
 
     public String SHA1() {

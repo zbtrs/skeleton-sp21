@@ -3,7 +3,10 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.List;
 
 import static gitlet.Utils.join;
 
@@ -23,6 +26,17 @@ public class Test implements Serializable{
     /**
      * 测试读入文本文件
      */
+
+    public static void testsha1() {
+        HashSet<String> temp = new HashSet<>();
+        temp.add("aaa");
+        List<Object> SHA11 = new ArrayList<>();
+        SHA11.add("asdfas");
+        SHA11.add("sadg");
+        Date tdate = new Date(0);
+        SHA11.add(tdate.toString());
+        System.out.println(Utils.sha1(SHA11));
+    }
 
     public void test() {
         File temp = join(Repository.CWD,"test.txt");

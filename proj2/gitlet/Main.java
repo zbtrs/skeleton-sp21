@@ -17,8 +17,6 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        //Test.test2();
-
         if (args.length == 0) {
             Utils.message("Please enter a command.");
             System.exit(0);
@@ -50,6 +48,7 @@ public class Main {
                 break;
             // TODO: FILL THE REST IN
         }
+
 
 
 

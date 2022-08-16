@@ -11,16 +11,16 @@ import java.util.Set;
 import static gitlet.Utils.*;
 
 public class Config {
-    public Map<String, File> commit2file = new HashMap<>();
-    public Map<String,File> branch2commit = new HashMap<>();
-    public Set<String> caches = new HashSet<>();
+    public HashMap<String, File> commit2file = new HashMap<>();
+    public HashMap<String,File> branch2commit = new HashMap<>();
+    public HashSet<String> caches = new HashSet<>();
 
     private final File HEADfile = join(Repository.GITLET_DIR,"HEAD");
     private final File commits = join(Repository.GITLET_DIR,"commits");
     private final File branchs = join(Repository.GITLET_DIR,"branchs");
-    private final File cachesfile = join(Repository.GITLET_DIR,"caches");
+    private final File cachesfile = join(Repository.GITLET_DIR,"cachesfile");
     private final File nowbranch = join(Repository.GITLET_DIR,"nowbranch");
-    public String HEAD,branch;
+    public String HEAD = "",branch = "";
 
     public void load() {
         commit2file = Utils.readObject(commits,HashMap.class);
@@ -43,6 +43,7 @@ public class Config {
         createfile(branchs);
         createfile(cachesfile);
         createfile(nowbranch);
+        store();
     }
 
     public void removecache(String filename) {

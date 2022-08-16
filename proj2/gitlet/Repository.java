@@ -32,21 +32,21 @@ public class Repository {
     public static final File REFS_DIR = join(GITLET_DIR,"refs");
     public static final File BLOBS_DIR = join(GITLET_DIR,"blobs");
     public static final File CACHE_DIR = join(GITLET_DIR,"caches");
-    public Config config;
+    public static Config config = new Config();
 
 
     /* TODO: fill in the rest of this class. */
 
     private void initialcommit() {
         config.load();
+        config.branch = "master";
+        //创建第一个commit
         Commit newcommit = new Commit("initial commit",new Date(0));
         File newcommitfile = join(REFS_DIR,newcommit.SHA1());
         createfile(newcommitfile);
         config.HEAD = newcommit.SHA1();
         config.updatecommit(newcommit,newcommitfile);
-        String nowbranch = "master";
-        config.updatebranch(nowbranch,newcommitfile);
-        config.setnowbranch(nowbranch);
+        config.updatebranch("master",newcommitfile);
         config.store();
     }
 
@@ -57,13 +57,6 @@ public class Repository {
         }
         GITLET_DIR.mkdir();
         //当前工作目录中记录HEAD指针指向的commit的hashID,等到第一次commit后再写入内容
-        File HEAD = join(CWD,"HEAD");
-        //创建HEAD文件
-        try {
-            HEAD.createNewFile();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
         //先把各个文件夹给创建好
         if (!REFS_DIR.exists()) {
             REFS_DIR.mkdir();
@@ -94,6 +87,7 @@ public class Repository {
         //读入要存入缓存区的文件
         Blob objfile = new Blob(obj);
         config.load();
+        //根据HEAD找到最新的commit
         Commit currentcommit = Utils.readObject(join(GITLET_DIR,config.HEAD),Commit.class);
         if (currentcommit.containblob(objfile)) {
             //如果当前的commit中包含了这个文件，就要删除缓冲区中同名的文件
@@ -104,8 +98,8 @@ public class Repository {
         if (!objincache.exists()) {
             createfile(objincache);
         }
-        Utils.writeObject(objincache,objfile);
-
+        Utils.writeContents(objincache,objfile.contents());
+        //更新config
         config.addcache(filename);
         config.store();
     }
@@ -139,6 +133,7 @@ public class Repository {
                 //如果没有包含，则需要添加
                 newcommit.additem(item,cacheblob);
             }
+            //将暂存区的blob写入到BLOBS_DIR中，用SHA1作为文件名，并且只写入blob中的文本内容
             temp = join(BLOBS_DIR,cacheblob.SHA1());
             Utils.createfile(temp);
             Utils.writeContents(temp,cacheblob.contents());
@@ -150,7 +145,7 @@ public class Repository {
         Utils.createfile(newcommitfile);
         config.updatecommit(newcommit,newcommitfile);
         config.updatebranch(nowbranch,newcommitfile);
-
+        config.HEAD = newcommit.SHA1();
         config.store();
     }
 
