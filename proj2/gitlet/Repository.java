@@ -265,6 +265,13 @@ public class Repository {
             Utils.message("File does not exist in that commit.");
             System.exit(0);
         }
+        Commit currentcommit = getcurrentcommit();
+        File cwdfile = join(CWD,filename);
+        if (!currentcommit.contain(filename) && cwdfile.exists()) {
+            Utils.message("There is an untracked file in the way; delete it, or add and commit it first.");
+            System.exit(0);
+        }
+        //检查是否会覆盖unstaged的文件
         String filesha1 = commit.getblobsha1(filename);
         Blob objfile = new Blob(join(BLOBS_DIR,filesha1));
         File CWDfile = join(CWD,filename);
