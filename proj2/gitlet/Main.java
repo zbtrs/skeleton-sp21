@@ -62,7 +62,7 @@ public class Main {
                     System.exit(0);
                 }
                 if (args.length == 3) {
-                    if (args[1] != "--") {
+                    if (!args[1].equals("--")) {
                         Utils.message("Incorrect operands.");
                         System.exit(0);
                     }
@@ -70,7 +70,7 @@ public class Main {
                 }
 
                 if (args.length == 4) {
-                    if (args[2] != "--") {
+                    if (!args[2].equals("--")) {
                         Utils.message("Incorrect operands.");
                         System.exit(0);
                     }
