@@ -107,6 +107,14 @@ public class Commit implements Serializable{
         obj.parentcommit = parentid;
     }
 
+    public Set<Blob> blobs() {
+        return obj.blobs;
+    }
+
+    public Set<String> blobnames() {
+        return blobnames;
+    }
+
     public boolean containblob(Blob item) {
         for (Blob blob : obj.blobs) {
             if (blob.SHA1().equals(item.SHA1())) {

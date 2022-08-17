@@ -283,8 +283,63 @@ public class Repository {
     }
 
     public void checkoutbranch(String branchname) {
-        //TODO
-        //throw new IllegalArgumentException();
+        config.load();
+        //先检查分支名是否存在
+        if (!config.branch2commit.containsKey(branchname)) {
+            Utils.message("No such branch exists.");
+            System.exit(0);
+        }
+        if (config.branch.equals(branchname)) {
+            Utils.message("No need to checkout the current branch.");
+            System.exit(0);
+        }
+        //将当前的commit和要checkout的commit弄出来
+        Commit currentcommit = getcurrentcommit();
+        Commit objcommit = Utils.readObject(config.getbranchcommit(branchname),Commit.class);
+        //遍历objcommit的所有blob,看是否存在一个在当前的工作区，并且不在currentcommit中
+        boolean canoverwrite = true;
+        for (String item : objcommit.blobnames()) {
+            File cwdfile = join(CWD,item);
+            if (cwdfile.exists() && currentcommit.contain(item)) {
+                canoverwrite = false;
+                break;
+            }
+        }
+        if (!canoverwrite) {
+            Utils.message("There is an untracked file in the way; delete it, or add and commit it first.");
+            System.exit(0);
+        }
+        //更改HEAD和nowbranch
+        config.HEAD = objcommit.SHA1();
+        config.branch = branchname;
+        //清空工作区的文件,危险！
+        List<String> filenames = Utils.plainFilenamesIn(CWD);
+        for (String filename : filenames) {
+            File cwdfile = join(CWD,filename);
+            if (cwdfile.exists()) {
+                cwdfile.delete();
+            }
+        }
+        //将objcommit的文件全部放到工作区中
+        for (String item : objcommit.blobnames()) {
+            Blob objblob = new Blob(join(BLOBS_DIR,objcommit.getblobsha1(item)));
+            File cwdfile = join(CWD,item);
+            createfile(cwdfile);
+            Utils.writeContents(cwdfile,objblob.contents());
+        }
+        //清空两个cache区域,注意要更改config!
+        for (String filename : config.addcaches) {
+            File cachefile = join(ADDCACHE_DIR,filename);
+            cachefile.delete();
+        }
+        config.addcaches.clear();
+        for (String filename : config.removecaches) {
+            File cachefile = join(REMOVECACHE_DIR,filename);
+            cachefile.delete();
+        }
+        config.removecaches.clear();
+
+        config.store();
     }
 
     public void branch(String branchname) {

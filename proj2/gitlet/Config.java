@@ -73,4 +73,8 @@ public class Config {
         branch2commit.put(nowbranch,newcommitfile);
     }
 
+    public File getbranchcommit(String branchname) {
+        return branch2commit.get(branchname);
+    }
+
 }
