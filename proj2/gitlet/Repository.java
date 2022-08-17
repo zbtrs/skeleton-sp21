@@ -99,6 +99,7 @@ public class Repository {
             Blob objblob = new Blob(join(BLOBS_DIR,filesha1));
             File objfile = join(REMOVECACHE_DIR,filename);
             Utils.writeContents(objfile,objblob.contents());
+            config.removecaches.add(filename);
 
             //如果工作区存在这个文件，就直接删除
             File CWDfile = join(CWD,filename);
@@ -128,7 +129,13 @@ public class Repository {
         Blob objfile = new Blob(obj);
         config.load();
         //根据HEAD找到最新的commit
-        Commit currentcommit = Utils.readObject(join(REFS_DIR,config.HEAD),Commit.class);
+        Commit currentcommit = getcurrentcommit();
+        //先把remove_cache中的同名文件删掉
+        File removefile = join(REMOVECACHE_DIR,filename);
+        if (removefile.exists()) {
+            removefile.delete();
+        }
+
         if (currentcommit.containblob(objfile)) {
             //如果当前的commit中包含了这个文件，就要删除缓冲区中同名的文件
             config.remove_addcache(filename);
@@ -150,7 +157,7 @@ public class Repository {
     public void commit(String message,Date date) {
         //检查错误情况:缓存区中没有文件
         config.load();
-        if (config.addcaches.isEmpty()) {
+        if (config.addcaches.isEmpty() && config.removecaches.isEmpty()) {
             Utils.message("No changes added to the commit.");
             System.exit(0);
         }
@@ -177,10 +184,18 @@ public class Repository {
             File blob2dir = join(BLOBS_DIR,cacheblob.SHA1());
             Utils.createfile(blob2dir);
             Utils.writeContents(blob2dir,cacheblob.contents());
-
             temp.delete();
         }
         config.addcaches.clear();
+        //接下来处理删除
+        for (String item : config.removecaches) {
+            File temp = join(REMOVECACHE_DIR,item);
+            Blob cacheblob = new Blob(temp);
+            newcommit.removeblob(item,cacheblob);
+            temp.delete();
+        }
+        config.removecaches.clear();
+
         newcommit.update();
         File newcommitfile = join(REFS_DIR,newcommit.SHA1());
         Utils.createfile(newcommitfile);

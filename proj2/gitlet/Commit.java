@@ -54,6 +54,11 @@ public class Commit implements Serializable{
         return obj.parentcommit;
     }
 
+    public void removeblob(String item, Blob cacheblob) {
+        blobnames.remove(item);
+        obj.blobs.remove(cacheblob);
+    }
+
 
     private class commitcontents implements Serializable {
         private String message,parentcommit;
