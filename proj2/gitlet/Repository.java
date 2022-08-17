@@ -272,7 +272,7 @@ public class Repository {
             createfile(CWDfile);
         }
         Utils.writeContents(CWDfile,objfile.contents());
-
+        config.store();
     }
 
     public void checkoutbranch(String branchname) {
@@ -280,4 +280,14 @@ public class Repository {
         //throw new IllegalArgumentException();
     }
 
+    public void branch(String branchname) {
+        config.load();
+        if (config.branch2commit.containsKey(branchname)) {
+            Utils.message("A branch with that name already exists.");
+            System.exit(0);
+        }
+        File commit = join(REFS_DIR,config.HEAD);
+        config.updatebranch(branchname,commit);
+        config.store();
+    }
 }

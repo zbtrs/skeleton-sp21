@@ -101,12 +101,14 @@ public class Main {
                 }
                 object.find(args[1]);
                 break;
+            case "branch":
+                if (args.length != 2) {
+                    Utils.message("Incorrect operands.");
+                    System.exit(0);
+                }
+                object.branch(args[1]);
+                break;
         }
-
-
-
-
-
 
     }
 }

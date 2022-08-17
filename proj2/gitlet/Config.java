@@ -73,5 +73,4 @@ public class Config {
         branch2commit.put(nowbranch,newcommitfile);
     }
 
-
 }
