@@ -352,4 +352,18 @@ public class Repository {
         config.updatebranch(branchname,commit);
         config.store();
     }
+
+    public void removebranch(String branchname) {
+        config.load();
+        if (config.branch.equals(branchname)) {
+            Utils.message("Cannot remove the current branch.");
+            System.exit(0);
+        }
+        if (!config.branch2commit.containsKey(branchname)) {
+            Utils.message("A branch with that name does not exist.");
+            System.exit(0);
+        }
+        config.branch2commit.remove(branchname);
+        config.store();
+    }
 }
