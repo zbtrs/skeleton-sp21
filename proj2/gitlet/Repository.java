@@ -33,6 +33,8 @@ public class Repository {
     public static final File BLOBS_DIR = join(GITLET_DIR,"blobs");
     public static final File ROOTCACHE_DIR = join(GITLET_DIR,"caches");
     public static final File ADDCACHE_DIR = join(ROOTCACHE_DIR,"add_caches");
+    public static final File REMOVECACHE_DIR = join(ROOTCACHE_DIR,"remove_caches");
+
     public static Config config = new Config();
 
 
@@ -72,6 +74,9 @@ public class Repository {
         if (!ADDCACHE_DIR.exists()) {
             ADDCACHE_DIR.mkdir();
         }
+        if (!REMOVECACHE_DIR.exists()) {
+            REMOVECACHE_DIR.mkdir();
+        }
         config.init();
         initialcommit();
     }
@@ -83,13 +88,26 @@ public class Repository {
     public void remove(String filename) {
         //如果这个文件在addcaches中，直接删除
         config.load();
+        Commit currentcommit = getcurrentcommit();
         if (config.addcaches.contains(filename)) {
             File objfile = join(ADDCACHE_DIR,filename);
             objfile.delete();
             config.addcaches.remove(filename);
-        } else {
-            Commit currentcommit = getcurrentcommit();
+        } else if (currentcommit.contain(filename)) {
+            //要先得到SHA1值，并在BLOB文件夹中找到这个,并写入到删除缓冲区中
+            String filesha1 = currentcommit.getblobsha1(filename);
+            Blob objblob = new Blob(join(BLOBS_DIR,filesha1));
+            File objfile = join(REMOVECACHE_DIR,filename);
+            Utils.writeContents(objfile,objblob.contents());
 
+            //如果工作区存在这个文件，就直接删除
+            File CWDfile = join(CWD,filename);
+            if (CWDfile.exists()) {
+                CWDfile.delete();
+            }
+        } else {
+            Utils.message("No reason to remove the file.");
+            System.exit(0);
         }
         config.store();
     }

@@ -109,6 +109,7 @@ public class Commit implements Serializable{
         //return obj.blobs.contains(item);
     }
     public boolean contain(String item) {
+        //TODO 这里或许可以加快效率
         for (String blobname : blobnames) {
             if (blobname.equals(item)) {
                 return true;
