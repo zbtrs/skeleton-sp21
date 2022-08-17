@@ -31,7 +31,8 @@ public class Repository {
     public static final File GITLET_DIR = join(CWD, ".gitlet");
     public static final File REFS_DIR = join(GITLET_DIR,"refs");
     public static final File BLOBS_DIR = join(GITLET_DIR,"blobs");
-    public static final File CACHE_DIR = join(GITLET_DIR,"caches");
+    public static final File ROOTCACHE_DIR = join(GITLET_DIR,"caches");
+    public static final File ADDCACHE_DIR = join(ROOTCACHE_DIR,"add_caches");
     public static Config config = new Config();
 
 
@@ -65,13 +66,33 @@ public class Repository {
         if (!BLOBS_DIR.exists()) {
             BLOBS_DIR.mkdir();
         }
-        if (!CACHE_DIR.exists()) {
-            CACHE_DIR.mkdir();
+        if (!ROOTCACHE_DIR.exists()) {
+            ROOTCACHE_DIR.mkdir();
+        }
+        if (!ADDCACHE_DIR.exists()) {
+            ADDCACHE_DIR.mkdir();
         }
         config.init();
         initialcommit();
     }
 
+    private Commit getcurrentcommit() {
+        Commit currentcommit = Utils.readObject(join(REFS_DIR, config.HEAD),Commit.class);
+        return currentcommit;
+    }
+    public void remove(String filename) {
+        //如果这个文件在addcaches中，直接删除
+        config.load();
+        if (config.addcaches.contains(filename)) {
+            File objfile = join(ADDCACHE_DIR,filename);
+            objfile.delete();
+            config.addcaches.remove(filename);
+        } else {
+            Commit currentcommit = getcurrentcommit();
+
+        }
+        config.store();
+    }
     public void add(String filename) {
         if (!GITLET_DIR.exists() || !GITLET_DIR.isDirectory()) {
             Utils.message("Not in an initialized Gitlet directory.");
@@ -92,17 +113,17 @@ public class Repository {
         Commit currentcommit = Utils.readObject(join(REFS_DIR,config.HEAD),Commit.class);
         if (currentcommit.containblob(objfile)) {
             //如果当前的commit中包含了这个文件，就要删除缓冲区中同名的文件
-            config.removecache(filename);
-            join(CACHE_DIR,filename).delete();
+            config.remove_addcache(filename);
+            join(ADDCACHE_DIR,filename).delete();
         } else {
             //在缓存区写入文件
-            File objincache = join(CACHE_DIR, filename);
+            File objincache = join(ADDCACHE_DIR, filename);
             if (!objincache.exists()) {
                 createfile(objincache);
             }
             Utils.writeContents(objincache, objfile.contents());
             //更新config
-            config.addcache(filename);
+            config.add_addcache(filename);
         }
         config.store();
     }
@@ -111,7 +132,7 @@ public class Repository {
     public void commit(String message,Date date) {
         //检查错误情况:缓存区中没有文件
         config.load();
-        if (config.caches.isEmpty()) {
+        if (config.addcaches.isEmpty()) {
             Utils.message("No changes added to the commit.");
             System.exit(0);
         }
@@ -124,8 +145,8 @@ public class Repository {
         String nowbranch = config.branch;
         File headfile = join(REFS_DIR,config.HEAD);
         Commit newcommit = new Commit(config.HEAD,headfile,message, date);
-        for (String item : config.caches) {
-            File temp = join(CACHE_DIR,item);
+        for (String item : config.addcaches) {
+            File temp = join(ADDCACHE_DIR,item);
             Blob cacheblob = new Blob(temp);
             if (newcommit.contain(item)) {
                 //如果commit中原来就包含了这个blobs,那么就需要更新
@@ -141,7 +162,7 @@ public class Repository {
 
             temp.delete();
         }
-        config.caches.clear();
+        config.addcaches.clear();
         newcommit.update();
         File newcommitfile = join(REFS_DIR,newcommit.SHA1());
         Utils.createfile(newcommitfile);

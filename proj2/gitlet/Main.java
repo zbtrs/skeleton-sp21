@@ -42,6 +42,13 @@ public class Main {
                 }
                 object.add(args[1]);
                 break;
+            case "rm":
+                if (args.length != 2) {
+                    Utils.message("Incorrect operands.");
+                    System.exit(0);
+                }
+                object.remove(args[1]);
+                break;
             case "commit":
                 if (args.length != 2) {
                     Utils.message("Incorrect operands.");
