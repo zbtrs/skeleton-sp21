@@ -94,6 +94,13 @@ public class Main {
                     object.checkoutbranch(args[1]);
                 }
                 break;
+            case "find":
+                if (args.length != 2) {
+                    Utils.message("Incorrect operands.");
+                    System.exit(0);
+                }
+                object.find(args[1]);
+                break;
         }
 
 

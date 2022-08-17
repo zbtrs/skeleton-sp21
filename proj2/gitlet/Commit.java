@@ -59,6 +59,9 @@ public class Commit implements Serializable{
         obj.blobs.remove(cacheblob);
     }
 
+    public String message() {
+        return obj.message;
+    }
 
     private class commitcontents implements Serializable {
         private String message,parentcommit;

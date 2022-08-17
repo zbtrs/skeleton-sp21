@@ -221,6 +221,21 @@ public class Repository {
         //TODO 有合并的情况
     }
 
+    public void find(String message) {
+        boolean isfind = false;
+        List<String> filenames = Utils.plainFilenamesIn(REFS_DIR);
+        for (String filename : filenames) {
+            Commit commit = Utils.readObject(join(REFS_DIR,filename),Commit.class);
+            if (commit.message().equals(message)) {
+                System.out.println(commit.SHA1());
+                isfind = true;
+            }
+        }
+        if (!isfind) {
+            Utils.message("Found no commit with that message.");
+            System.exit(0);
+        }
+    }
     public void globallog() {
         List<String> filenames = Utils.plainFilenamesIn(REFS_DIR);
         for (String filename : filenames) {
@@ -264,4 +279,5 @@ public class Repository {
         //TODO
         //throw new IllegalArgumentException();
     }
+
 }
