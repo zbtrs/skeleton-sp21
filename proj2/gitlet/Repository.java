@@ -3,6 +3,7 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 
 import static gitlet.Utils.*;
 
@@ -219,6 +220,15 @@ public class Repository {
         }
         //TODO 有合并的情况
     }
+
+    public void globallog() {
+        List<String> filenames = Utils.plainFilenamesIn(REFS_DIR);
+        for (String filename : filenames) {
+            Commit commit = Utils.readObject(join(REFS_DIR,filename),Commit.class);
+            commit.print();
+        }
+    }
+
     /**
      * 将commitid中的filename这个文件写到工作区中
      * opt为0表示当前commit,为1表示指定了commitid

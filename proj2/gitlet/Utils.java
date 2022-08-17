@@ -137,10 +137,12 @@ class Utils {
     }
 
     public static void createfile(File obj) {
-        try {
-            obj.createNewFile();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        if (!obj.exists()) {
+            try {
+                obj.createNewFile();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -162,10 +164,6 @@ class Utils {
 
     /** Write OBJ to FILE. */
 
-    static String dateToTimeStamp(Date date) {
-        DateFormat dateFormat = new SimpleDateFormat("EEE MMM d HH:mm:ss yyyy Z", Locale.US);
-        return dateFormat.format(date);
-    }
     static void writeObject(File file, Serializable obj) {
         writeContents(file, serialize(obj));
     }

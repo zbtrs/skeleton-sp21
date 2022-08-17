@@ -63,6 +63,13 @@ public class Main {
                 }
                 object.log();
                 break;
+            case "global-log":
+                if (args.length != 1) {
+                    Utils.message("Incorrect operands.");
+                    System.exit(0);
+                }
+                object.globallog();
+                break;
             case "checkout":
                 if (args.length <= 1 || args.length > 4) {
                     Utils.message("Incorrect operands.");
