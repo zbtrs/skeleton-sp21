@@ -302,7 +302,7 @@ public class Repository {
         boolean canoverwrite = true;
         for (String item : objcommit.blobnames()) {
             File cwdfile = join(CWD,item);
-            if (cwdfile.exists() && currentcommit.contain(item)) {
+            if (cwdfile.exists() && !currentcommit.contain(item)) {
                 canoverwrite = false;
                 break;
             }
