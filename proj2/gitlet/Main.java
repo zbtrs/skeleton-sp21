@@ -17,12 +17,12 @@ public class Main {
     }
 
     public static void main(String[] args) {
-        /*
+
         if (args.length == 0) {
             Utils.message("Please enter a command.");
             System.exit(0);
         }
-        */
+
         Repository object = new Repository();
         //object.add("test2.txt");
 
@@ -91,7 +91,7 @@ public class Main {
                     object.checkoutfile(args[1],args[3],1);
                 }
                 if (args.length == 2) {
-                    object.checkoutbranch(args[1]);
+                    object.checkoutbranch(args[1],0);
                 }
                 break;
             case "find":
@@ -121,6 +121,13 @@ public class Main {
                     System.exit(0);
                 }
                 object.status();
+                break;
+            case "reset":
+                if (args.length != 2) {
+                    Utils.message("Incorrect operands.");
+                    System.exit(0);
+                }
+                object.reset(args[1]);
                 break;
         }
     }

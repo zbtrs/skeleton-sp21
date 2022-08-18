@@ -43,6 +43,13 @@ public class Repository {
 
     /* TODO: fill in the rest of this class. */
 
+    private void checkinit() {
+        if (!GITLET_DIR.exists() || !GITLET_DIR.isDirectory()) {
+            Utils.message("Not in an initialized Gitlet directory.");
+            System.exit(0);
+        }
+    }
+
     private void initialcommit() {
         config.load();
         config.branch = "master";
@@ -89,6 +96,7 @@ public class Repository {
         return currentcommit;
     }
     public void remove(String filename) {
+        checkinit();
         //如果这个文件在addcaches中，直接删除
         config.load();
         Commit currentcommit = getcurrentcommit();
@@ -116,10 +124,7 @@ public class Repository {
         config.store();
     }
     public void add(String filename) {
-        if (!GITLET_DIR.exists() || !GITLET_DIR.isDirectory()) {
-            Utils.message("Not in an initialized Gitlet directory.");
-            System.exit(0);
-        }
+        checkinit();
 
         File obj = join(CWD,filename);
         //如果要添加的文件不存在
@@ -159,6 +164,7 @@ public class Repository {
     //commit信息都存储在.gitlet/refs中，HEAD,branchs,commits等信息存储在.gitlet中
     public void commit(String message,Date date) {
         //检查错误情况:缓存区中没有文件
+        checkinit();
         config.load();
         if (config.addcaches.isEmpty() && config.removecaches.isEmpty()) {
             Utils.message("No changes added to the commit.");
@@ -210,6 +216,7 @@ public class Repository {
     }
 
     public void log() {
+        checkinit();
         config.load();
         Commit commit = Utils.readObject(join(REFS_DIR,config.HEAD),Commit.class);
         while (true) {
@@ -224,6 +231,7 @@ public class Repository {
     }
 
     public void find(String message) {
+        checkinit();
         boolean isfind = false;
         List<String> filenames = Utils.plainFilenamesIn(REFS_DIR);
         for (String filename : filenames) {
@@ -239,6 +247,7 @@ public class Repository {
         }
     }
     public void globallog() {
+        checkinit();
         List<String> filenames = Utils.plainFilenamesIn(REFS_DIR);
         for (String filename : filenames) {
             Commit commit = Utils.readObject(join(REFS_DIR,filename),Commit.class);
@@ -251,7 +260,7 @@ public class Repository {
      * opt为0表示当前commit,为1表示指定了commitid
      */
     public void checkoutfile(String commitid,String filename,int opt) {
-
+        checkinit();
         config.load();
         if (opt == 0) {
             commitid = config.HEAD;
@@ -284,14 +293,15 @@ public class Repository {
         config.store();
     }
 
-    public void checkoutbranch(String branchname) {
+    public void checkoutbranch(String branchname,int opt) {
+        checkinit();
         config.load();
         //先检查分支名是否存在
         if (!config.branch2commit.containsKey(branchname)) {
             Utils.message("No such branch exists.");
             System.exit(0);
         }
-        if (config.branch.equals(branchname)) {
+        if (config.branch.equals(branchname) && opt != 1) {
             Utils.message("No need to checkout the current branch.");
             System.exit(0);
         }
@@ -345,6 +355,7 @@ public class Repository {
     }
 
     public void branch(String branchname) {
+        checkinit();
         config.load();
         if (config.branch2commit.containsKey(branchname)) {
             Utils.message("A branch with that name already exists.");
@@ -355,6 +366,7 @@ public class Repository {
         config.store();
     }
     public void removebranch(String branchname) {
+        checkinit();
         config.load();
         if (config.branch.equals(branchname)) {
             Utils.message("Cannot remove the current branch.");
@@ -376,10 +388,9 @@ public class Repository {
         System.out.println();
     }
 
-
     public void status() {
+        checkinit();
         config.load();
-        //TODO 可以把这些输出部分都放到一个函数里面
         ArrayList<String> stringstosort = new ArrayList<>();
         //branches
         for (String item : config.branch2commit.keySet()) {
@@ -420,25 +431,25 @@ public class Repository {
             if (cwdfile.exists() && !addcachefile.exists()) {
                 Blob cwdblob = new Blob(cwdfile);
                 if (!cwdblob.SHA1().equals(currentcommit.getblobsha1(item))) {
-                    stringstosort.add(item);
+                    stringstosort.add(item + " (modified)");
                 }
             }
             //如果不在工作区中也不在removecaches中
             if (!cwdfile.exists() && !config.removecaches.contains(item)) {
-                stringstosort.add(item);
+                stringstosort.add(item + " (deleted)");
             }
         }
         //如果在addcaches中，但是不在工作区中或者addcaches中的文件内容和工作区的文件内容不同
         for (String item : config.addcaches) {
             File cwdfile = join(CWD,item);
             if (!cwdfile.exists()) {
-                stringstosort.add(item);
+                stringstosort.add(item + " (modified)");
             } else {
                 File addcachefile = join(ADDCACHE_DIR,item);
                 Blob cwdblob = new Blob(cwdfile);
                 Blob addcacheblob = new Blob(addcachefile);
                 if (!cwdblob.SHA1().equals(addcacheblob.SHA1())) {
-                    stringstosort.add(item);
+                    stringstosort.add(item + " (modified)");
                 }
             }
         }
@@ -447,12 +458,27 @@ public class Repository {
         //untracked file
         stringstosort.clear();
         for (String item : Utils.plainFilenamesIn(CWD)) {
-            if (!currentcommit.contain(item)) {
+            if (!currentcommit.contain(item) && !config.addcaches.contains(item)) {
                 stringstosort.add(item);
             }
         }
         stringstosort.sort(Comparator.naturalOrder());
         printstatus(stringstosort,"=== Untracked Files ===");
+
+        config.store();
+    }
+
+    public void reset(String commitid) {
+        checkinit();
+        config.load();
+        if (!config.commit2file.containsKey(commitid)) {
+            Utils.message("No commit with that id exists.");
+            System.exit(0);
+        }
+        File commitfile = join(REFS_DIR,commitid);
+        config.updatebranch(config.branch,commitfile);
+        config.HEAD = commitid;
+        checkoutbranch(config.branch,1);
 
         config.store();
     }
