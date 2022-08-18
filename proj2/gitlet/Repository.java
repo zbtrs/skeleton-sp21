@@ -1,11 +1,10 @@
 package gitlet;
 
+import jh61b.junit.In;
+
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static gitlet.Utils.*;
 
@@ -39,6 +38,7 @@ public class Repository {
     public static final File REMOVECACHE_DIR = join(ROOTCACHE_DIR,"remove_caches");
 
     public static Config config = new Config();
+    private static final int INF = 0x7ffffff;
 
 
     /* TODO: fill in the rest of this class. */
@@ -479,6 +479,46 @@ public class Repository {
         config.updatebranch(config.branch,commitfile);
         config.HEAD = commitid;
         checkoutbranch(config.branch,1);
+
+        config.store();
+    }
+
+    private Commit getlca(Commit A,Commit B) {
+        HashMap<String,Integer> depthA = new HashMap<>();
+        HashMap<String,Integer> depthB = new HashMap<>();
+        HashSet<String> ancestorA = new HashSet<>();
+        HashSet<String> ancestorB = new HashSet<>();
+        BFS(A,depthA,ancestorA);
+        BFS(B,depthB,ancestorB);
+        int mindep = INF;
+        String C;
+        for (String item : ancestorA) {
+            if (depthB.containsKey(item) && depthB.get(item) < mindep) {
+                mindep = depthB.get(item);
+                C = item;
+            }
+        }
+        return Utils.readObject(join(REFS_DIR,C),Commit.class);
+    }
+
+    public void merge(String branchname) {
+        checkinit();
+        config.load();
+        if (!config.addcaches.isEmpty()) {
+            Utils.message("You have uncommitted changes.");
+            System.exit(0);
+        }
+        if (!config.branch2commit.containsKey(branchname)) {
+            Utils.message("A branch with that name does not exist.");
+            System.exit(0);
+        }
+        if (branchname.equals(config.branch)) {
+            Utils.message("Cannot merge a branch with itself.");
+            System.exit(0);
+        }
+        Commit currentcommit = getcurrentcommit();
+        Commit goalcommit = Utils.readObject(config.getbranchcommit(branchname), Commit.class);
+        Commit LCAcommit = getlca(currentcommit,goalcommit);
 
         config.store();
     }
