@@ -278,7 +278,7 @@ public class Repository {
         }
         Commit currentcommit = getcurrentcommit();
         File cwdfile = join(CWD,filename);
-        if (!currentcommit.contain(filename) && cwdfile.exists()) {
+        if (!currentcommit.contain(filename) && config.addcaches.contains(filename) && cwdfile.exists()) {
             Utils.message("There is an untracked file in the way; delete it, or add and commit it first.");
             System.exit(0);
         }
