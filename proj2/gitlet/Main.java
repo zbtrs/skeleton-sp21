@@ -108,7 +108,22 @@ public class Main {
                 }
                 object.branch(args[1]);
                 break;
+            case "rm-branch":
+                if (args.length != 2) {
+                    Utils.message("Incorrect operands.");
+                    System.exit(0);
+                }
+                object.removebranch(args[1]);
+                break;
+            case "status":
+                if (args.length != 1) {
+                    Utils.message("Incorrect operands.");
+                    System.exit(0);
+                }
+                object.status();
+                break;
         }
-
     }
+
 }
+

@@ -2,6 +2,8 @@ package gitlet;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -350,6 +352,108 @@ public class Repository {
         }
         File commit = join(REFS_DIR,config.HEAD);
         config.updatebranch(branchname,commit);
+        config.store();
+    }
+    public void removebranch(String branchname) {
+        config.load();
+        if (config.branch.equals(branchname)) {
+            Utils.message("Cannot remove the current branch.");
+            System.exit(0);
+        }
+        if (!config.branch2commit.containsKey(branchname)) {
+            Utils.message("A branch with that name does not exist.");
+            System.exit(0);
+        }
+        config.branch2commit.remove(branchname);
+        config.store();
+    }
+
+    private void printstatus(ArrayList<String> stringstoprint,String message) {
+        System.out.println(message);
+        for (String item : stringstoprint) {
+            System.out.println(item);
+        }
+        System.out.println();
+    }
+
+
+    public void status() {
+        config.load();
+        //TODO 可以把这些输出部分都放到一个函数里面
+        ArrayList<String> stringstosort = new ArrayList<>();
+        //branches
+        for (String item : config.branch2commit.keySet()) {
+            stringstosort.add(item);
+        }
+        stringstosort.sort(Comparator.naturalOrder());
+        System.out.println("=== Branches ===");
+        for (String item : stringstosort) {
+            if (item.equals(config.branch)) {
+                System.out.println("*"+config.branch);
+            } else {
+                System.out.println(item);
+            }
+        }
+        System.out.println();
+        //staged files
+        stringstosort.clear();
+        for (String item : config.addcaches) {
+            stringstosort.add(item);
+        }
+        stringstosort.sort(Comparator.naturalOrder());
+        printstatus(stringstosort,"=== Staged Files ===");
+        //removed files
+        stringstosort.clear();
+        for (String item : config.removecaches) {
+            stringstosort.add(item);
+        }
+        stringstosort.sort(Comparator.naturalOrder());
+        printstatus(stringstosort,"=== Removed Files ===");
+        //modification but not...
+        Commit currentcommit = getcurrentcommit();
+        stringstosort.clear();
+        for (String item : currentcommit.blobnames()) {
+            //如果在当前的工作目录中并且不在addcache中，但是文件内容发生了改变
+            File cwdfile = join(CWD,item);
+            //这里直接比较SHA1就可以
+            File addcachefile = join(ADDCACHE_DIR,item);
+            if (cwdfile.exists() && !addcachefile.exists()) {
+                Blob cwdblob = new Blob(cwdfile);
+                if (!cwdblob.SHA1().equals(currentcommit.getblobsha1(item))) {
+                    stringstosort.add(item);
+                }
+            }
+            //如果不在工作区中也不在removecaches中
+            if (!cwdfile.exists() && !config.removecaches.contains(item)) {
+                stringstosort.add(item);
+            }
+        }
+        //如果在addcaches中，但是不在工作区中或者addcaches中的文件内容和工作区的文件内容不同
+        for (String item : config.addcaches) {
+            File cwdfile = join(CWD,item);
+            if (!cwdfile.exists()) {
+                stringstosort.add(item);
+            } else {
+                File addcachefile = join(ADDCACHE_DIR,item);
+                Blob cwdblob = new Blob(cwdfile);
+                Blob addcacheblob = new Blob(addcachefile);
+                if (!cwdblob.SHA1().equals(addcacheblob.SHA1())) {
+                    stringstosort.add(item);
+                }
+            }
+        }
+        stringstosort.sort(Comparator.naturalOrder());
+        printstatus(stringstosort,"=== Modifications Not Staged For Commit ===");
+        //untracked file
+        stringstosort.clear();
+        for (String item : Utils.plainFilenamesIn(CWD)) {
+            if (!currentcommit.contain(item)) {
+                stringstosort.add(item);
+            }
+        }
+        stringstosort.sort(Comparator.naturalOrder());
+        printstatus(stringstosort,"=== Untracked Files ===");
+
         config.store();
     }
 }
