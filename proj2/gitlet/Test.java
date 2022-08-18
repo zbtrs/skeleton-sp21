@@ -3,10 +3,7 @@ package gitlet;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 import static gitlet.Utils.join;
 
@@ -21,6 +18,16 @@ public class Test implements Serializable{
 
     private class Testobj implements Serializable {
 
+    }
+
+    public static void testsort() {
+        ArrayList<String> obj = new ArrayList<>();
+        obj.add("asdf");
+        obj.add("gjfl");
+        obj.add("dgalkjl");
+        obj.add("gfdf");
+        obj.sort(Comparator.naturalOrder());
+        System.out.println(obj);
     }
 
     /**

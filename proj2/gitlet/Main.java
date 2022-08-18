@@ -23,9 +23,8 @@ public class Main {
             System.exit(0);
         }
         */
-        Repository object = new Repository();
-        //object.add("test2.txt");
 
+        Repository object = new Repository();
         String firstArg = args[0];
         switch(firstArg) {
             case "init":
@@ -115,7 +114,16 @@ public class Main {
                 }
                 object.removebranch(args[1]);
                 break;
+            case "status":
+                if (args.length != 1) {
+                    Utils.message("Incorrect operands.");
+                    System.exit(0);
+                }
+                object.status();
+                break;
         }
+
+
 
     }
 }
