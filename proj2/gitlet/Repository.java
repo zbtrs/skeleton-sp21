@@ -264,12 +264,12 @@ public class Repository {
         if (opt == 0) {
             commitid = config.HEAD;
         }
+        commitid = getcompletecommitid(commitid);
         File commitfile = join(REFS_DIR,commitid);
         if (!commitfile.exists()) {
             Utils.message("No commit with that id exists.");
             System.exit(0);
         }
-
         Commit commit = Utils.readObject(join(REFS_DIR,commitid),Commit.class);
         if (!commit.contain(filename)) {
             Utils.message("File does not exist in that commit.");
@@ -290,6 +290,15 @@ public class Repository {
         }
         Utils.writeContents(CWDfile,objfile.contents());
         config.store();
+    }
+
+    private String getcompletecommitid(String commitid) {
+        for (String commit : config.commit2file.keySet()) {
+            if (commit.startsWith(commitid)) {
+                return commit;
+            }
+        }
+        return commitid;
     }
 
     public void checkoutbranch(String branchname,int opt) {
@@ -470,6 +479,7 @@ public class Repository {
     public void reset(String commitid) {
         checkinit();
         config.load();
+        commitid = getcompletecommitid(commitid);
         if (!config.commit2file.containsKey(commitid)) {
             Utils.message("No commit with that id exists.");
             System.exit(0);
