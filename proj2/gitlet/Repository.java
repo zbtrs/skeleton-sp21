@@ -1,11 +1,11 @@
 package gitlet;
 
-import jh61b.junit.In;
-import org.antlr.v4.runtime.misc.Pair;
-
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
 
 import static gitlet.Utils.*;
 
@@ -39,7 +39,6 @@ public class Repository {
     public static final File REMOVECACHE_DIR = join(ROOTCACHE_DIR,"remove_caches");
 
     public static Config config = new Config();
-    private static final int INF = 0x7ffffff;
 
 
     /* TODO: fill in the rest of this class. */
@@ -480,201 +479,6 @@ public class Repository {
         config.updatebranch(config.branch,commitfile);
         config.HEAD = commitid;
         checkoutbranch(config.branch,1);
-
-        config.store();
-    }
-
-    private void BFS(Commit S,HashMap<String,Integer> depth,HashSet<String> ancestor) {
-        Queue<QueueNode> queue = new ArrayDeque<>();  //woc?必须要初始化为ArrayDeque
-        QueueNode initialnode = new QueueNode(S,0);
-        queue.add(initialnode);
-        while (!queue.isEmpty()) {
-            QueueNode u = queue.remove();
-            Commit commit = u.commit();
-            String sha1 = commit.SHA1();
-            if (!ancestor.contains(sha1)) {
-                //如果这个点之前没有被遍历过
-                ancestor.add(sha1);
-                depth.put(sha1,u.depth());
-                //如果不是初始点，开始转移
-                if (!commit.parent().equals("")) {
-                    //加入父亲节点
-                    String parentsha1 = commit.parent();
-                    Commit parentcommit = Utils.readObject(join(REFS_DIR,parentsha1),Commit.class);
-                    QueueNode v = new QueueNode(parentcommit,u.depth() + 1);
-                    queue.add(v);
-                    if (!commit.parent2().equals("")) {
-                        parentsha1 = commit.parent2();
-                        parentcommit = Utils.readObject(join(REFS_DIR,parentsha1), Commit.class);
-                        v = new QueueNode(parentcommit,u.depth() + 1);
-                        queue.add(v);
-                    }
-                }
-            }
-        }
-    }
-    private Commit getlca(Commit A,Commit B) {
-        HashMap<String,Integer> depthA = new HashMap<>();
-        HashMap<String,Integer> depthB = new HashMap<>();
-        HashSet<String> ancestorA = new HashSet<>();
-        HashSet<String> ancestorB = new HashSet<>();
-        BFS(A,depthA,ancestorA);
-        BFS(B,depthB,ancestorB);
-        int mindep = INF;
-        String C = A.SHA1();
-        for (String item : ancestorA) {
-            if (depthB.containsKey(item) && depthB.get(item) < mindep) {
-                mindep = depthB.get(item);
-                C = item;
-            }
-        }
-        return Utils.readObject(join(REFS_DIR,C),Commit.class);
-    }
-
-    private void mergestage(String goalsha1,String filename) {
-        Blob blob = new Blob(join(BLOBS_DIR,goalsha1));
-        File cachefile = join(ADDCACHE_DIR,filename);
-        createfile(cachefile);
-        Utils.writeContents(cachefile,blob.contents());
-    }
-
-    private String getnewcontents(String currentcontents,String goalcontents) {
-        StringBuffer result = new StringBuffer();
-        result.append("<<<<<<< HEAD\n");
-        result.append(currentcontents);
-        result.append("\n=======\n");
-        result.append(goalcontents);
-        result.append("\n>>>>>>>");
-        return result.toString();
-    }
-
-    public void merge(String branchname) {
-        checkinit();
-        config.load();
-        if (!config.addcaches.isEmpty()) {
-            Utils.message("You have uncommitted changes.");
-            System.exit(0);
-        }
-        if (!config.branch2commit.containsKey(branchname)) {
-            Utils.message("A branch with that name does not exist.");
-            System.exit(0);
-        }
-        if (branchname.equals(config.branch)) {
-            Utils.message("Cannot merge a branch with itself.");
-            System.exit(0);
-        }
-        Commit currentcommit = getcurrentcommit();
-        Commit goalcommit = Utils.readObject(config.getbranchcommit(branchname), Commit.class);
-        Commit LCAcommit = getlca(currentcommit,goalcommit);
-        //接下来遍历工作目录，检查是否有untracked的文件被修改或者删除
-        for (String filename : Utils.plainFilenamesIn(CWD)) {
-            if (!currentcommit.contain(filename)) {
-                if (currentcommit.SHA1().equals(LCAcommit.SHA1())) {
-                    Utils.message("There is an untracked file in the way; delete it, or add and commit it first.");
-                    System.exit(0);
-                }
-                if (!LCAcommit.contain(filename) && goalcommit.contain(filename)) {
-                    Utils.message("There is an untracked file in the way; delete it, or add and commit it first.");
-                    System.exit(0);
-                }
-                if (LCAcommit.contain(filename) && goalcommit.contain(filename) && !LCAcommit.getblobsha1(filename).equals(goalcommit.getblobsha1(filename))) {
-                    Utils.message("There is an untracked file in the way; delete it, or add and commit it first.");
-                    System.exit(0);
-                }
-            }
-        }
-        //接下来判断如果公共祖先是两个分支中的一个的情况。
-        if (LCAcommit.SHA1().equals(goalcommit.SHA1())) {
-            System.out.println("Given branch is an ancestor of the current branch.");
-            return;
-        }
-        if (LCAcommit.SHA1().equals(currentcommit.SHA1())) {
-            checkoutbranch(branchname,0);
-            System.out.println("Current branch fast-forwarded.");
-            return;
-        }
-
-        boolean conflict = false;
-        //接下来把三个commit中的文件全部放到一个set中
-        HashSet<String> files = new HashSet<>(LCAcommit.blobnames());
-        files.addAll(currentcommit.blobnames());
-        files.addAll(goalcommit.blobnames());
-        //遍历这个set中的文件，判断给定的条件
-        for (String filename : files) {
-
-            boolean lcacontain = LCAcommit.contain(filename);
-            boolean currentcontain = currentcommit.contain(filename);
-            boolean goalcontain = goalcommit.contain(filename);
-            String lcasha1 = lcacontain ? LCAcommit.getblobsha1(filename) : "";
-            String currentsha1 = currentcontain ? currentcommit.getblobsha1(filename) : "";
-            String goalsha1 = goalcontain ? goalcommit.getblobsha1(filename) : "";
-            //在给定分支中和LCA中和当前分支中，给定分支中的和LCA中的内容不同，当前分支的和LCA的相同，将文件给stage
-            //stage的应该是给定分支的文件内容
-            //TODO 改变if else结构
-            if (lcacontain && currentcontain && goalcontain && !goalsha1.equals(lcasha1) && currentsha1.equals(lcasha1)) {
-                config.addcaches.add(filename);
-                mergestage(goalsha1,filename);
-            } else if (!lcacontain && !currentcontain && goalcontain) {
-                //如果不在LCA也不在当前分支中，但是在给定分支中，则这个文件应该被checkout并且stage
-                checkoutfile(goalcommit.SHA1(),filename,1);
-                mergestage(goalsha1,filename);
-            } else if (lcacontain && currentcontain && !goalcontain && currentsha1.equals(lcasha1)) {
-                //在LCA，并且也在当前分支中没有修改，但是不在给定分支中的文件应该被删除和untracked,也就是只动commit的这个文件而不动工作区的这个文件
-                //这里还不能直接改动current commit而是应该在新建的commit上改动,可以删掉addcache里面的并且在removecache中加上
-                config.addcaches.remove(filename);
-                config.removecaches.add(filename);
-                File addcachefile = join(ADDCACHE_DIR,filename);
-                if (addcachefile.exists()) {
-                    addcachefile.delete();
-                }
-                File removecachefile = join(REMOVECACHE_DIR,filename);
-                createfile(removecachefile);
-            } else {
-                //有冲突的情况
-                boolean flag = false;
-                if (lcacontain && currentcontain && goalcontain && !currentsha1.equals(lcasha1) && !goalsha1.equals(lcasha1) && !currentsha1.equals(goalsha1)) {
-                    flag = true;
-                }
-                if (lcacontain && currentcontain && !goalcontain && !currentsha1.equals(lcasha1)) {
-                    flag = true;
-                }
-                if (lcacontain && goalcontain && !currentcontain && !goalsha1.equals(lcasha1)) {
-                    flag = true;
-                }
-                if (!lcacontain && goalcontain && currentcontain && !currentsha1.equals(goalsha1)) {
-                    flag = true;
-                }
-                if (flag) {
-                    conflict = true;
-                    String currentcontents = "", goalcontents = "";
-                    if (currentcontain) {
-                        Blob currentblob = new Blob(join(BLOBS_DIR, currentsha1));
-                        currentcontents = currentblob.contents();
-                    }
-                    if (goalcontain) {
-                        Blob goalblob = new Blob(join(BLOBS_DIR,goalsha1));
-                        goalcontents = goalblob.contents();
-                    }
-                    String newcontents = getnewcontents(currentcontents,goalcontents);
-                    //写入工作区和stage
-                    File cwdfile = join(CWD,filename);
-                    createfile(cwdfile);
-                    Utils.writeContents(cwdfile,newcontents);
-                    File addcachefile = join(ADDCACHE_DIR,filename);
-                    config.addcaches.add(filename);
-                    createfile(addcachefile);
-                    Utils.writeContents(addcachefile,newcontents);
-                }
-            }
-        }
-        //接下来新建一个commit,根据是否冲突的信息
-        if (conflict) {
-            System.out.println("Encountered a merge conflict.");
-        }
-        String commitmessage = "Merged " + branchname + " into " + config.branch + ".";
-        commit(commitmessage,new Date());
-        currentcommit = getcurrentcommit();
-        currentcommit.setmerge(goalcommit.SHA1());
 
         config.store();
     }
