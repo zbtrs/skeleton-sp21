@@ -141,6 +141,7 @@ public class Repository {
         if (removefile.exists()) {
             removefile.delete();
         }
+        config.removecaches.remove(filename);
 
         if (currentcommit.contain(filename) && currentcommit.containblob(objfile)) {
             //如果当前的commit中包含了这个文件，就要删除缓冲区中同名的文件
