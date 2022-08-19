@@ -66,6 +66,14 @@ public class Commit implements Serializable{
         return obj.message;
     }
 
+    public String parent2() {
+        return obj.secondparentcommit;
+    }
+
+    public void setmerge(String branch) {
+        obj.secondparentcommit = branch;
+    }
+
     private class commitcontents implements Serializable {
         private String message,parentcommit,secondparentcommit;
         private Date createDate;
