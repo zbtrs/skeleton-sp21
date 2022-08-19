@@ -477,9 +477,8 @@ public class Repository {
         File commitfile = join(REFS_DIR,commitid);
         config.updatebranch(config.branch,commitfile);
         config.HEAD = commitid;
-        checkoutbranch(config.branch,1);
-
         config.store();
+        checkoutbranch(config.branch,1);
     }
 
     private void BFS(Commit S,HashMap<String,Integer> depth,HashSet<String> ancestor) {
