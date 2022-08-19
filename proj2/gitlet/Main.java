@@ -129,6 +129,13 @@ public class Main {
                 }
                 object.reset(args[1]);
                 break;
+            case "merge":
+                if (args.length != 2) {
+                    Utils.message("Incorrect operands.");
+                    System.exit(0);
+                }
+                object.merge(args[1]);
+                break;
             default:
                 Utils.message("No command with that name exists.");
                 System.exit(0);
