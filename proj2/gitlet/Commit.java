@@ -45,6 +45,9 @@ public class Commit implements Serializable{
     public void print() {
         System.out.println("===");
         System.out.format("commit %s\n",SHA1);
+        if (!obj.secondparentcommit.equals("")) {
+            System.out.format("Merge: %s %s\n", obj.parentcommit.substring(0,7),obj.secondparentcommit.substring(0,7));
+        }
         System.out.format("Date: %s\n",dateToTimeStamp(obj.createDate));
         System.out.format("%s\n",obj.message);
         System.out.println();
@@ -72,7 +75,7 @@ public class Commit implements Serializable{
     }
 
     private class commitcontents implements Serializable {
-        private String message,parentcommit;
+        private String message,parentcommit,secondparentcommit;
         private Date createDate;
         private Set<Blob> blobs;
 
@@ -99,6 +102,7 @@ public class Commit implements Serializable{
         obj = new commitcontents();
         obj.message = message;
         obj.parentcommit = "";
+        obj.secondparentcommit = "";
         obj.createDate = date;
         obj.blobs = new HashSet<>();
         SHA1 = obj.getsha1();
@@ -113,6 +117,7 @@ public class Commit implements Serializable{
         obj.message = message;
         obj.createDate = date;
         obj.parentcommit = parentid;
+        obj.secondparentcommit = "";
     }
 
     public Set<Blob> blobs() {
