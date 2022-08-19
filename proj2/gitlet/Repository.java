@@ -161,7 +161,7 @@ public class Repository {
     }
 
     //commit信息都存储在.gitlet/refs中，HEAD,branchs,commits等信息存储在.gitlet中
-    public void commit(String message,Date date) {
+    public void commit(String message,Date date,int opt,String secondparent) {
         //检查错误情况:缓存区中没有文件
         checkinit();
         config.load();
@@ -205,6 +205,10 @@ public class Repository {
         config.removecaches.clear();
 
         newcommit.update();
+        if (opt == 1) {
+            newcommit = getcurrentcommit();
+            newcommit.setmerge(secondparent);
+        }
         File newcommitfile = join(REFS_DIR,newcommit.SHA1());
         Utils.createfile(newcommitfile);
         Utils.writeObject(newcommitfile,newcommit);
@@ -285,9 +289,7 @@ public class Repository {
         String filesha1 = commit.getblobsha1(filename);
         Blob objfile = new Blob(join(BLOBS_DIR,filesha1));
         File CWDfile = join(CWD,filename);
-        if (!CWDfile.exists()) {
-            createfile(CWDfile);
-        }
+        createfile(CWDfile);
         Utils.writeContents(CWDfile,objfile.contents());
         config.store();
     }
@@ -543,6 +545,7 @@ public class Repository {
         File cachefile = join(ADDCACHE_DIR,filename);
         createfile(cachefile);
         Utils.writeContents(cachefile,blob.contents());
+        config.addcaches.add(filename);
     }
 
     private String getnewcontents(String currentcontents,String goalcontents) {
@@ -573,6 +576,14 @@ public class Repository {
         Commit currentcommit = getcurrentcommit();
         Commit goalcommit = Utils.readObject(config.getbranchcommit(branchname), Commit.class);
         Commit LCAcommit = getlca(currentcommit,goalcommit);
+
+        /*
+        //TODO
+        if (branchname.equals("B2")) {
+            System.out.println("sb!! " + LCAcommit.message());
+        }
+         */
+
         //接下来遍历工作目录，检查是否有untracked的文件被修改或者删除
         for (String filename : Utils.plainFilenamesIn(CWD)) {
             if (!currentcommit.contain(filename)) {
@@ -606,6 +617,7 @@ public class Repository {
         HashSet<String> files = new HashSet<>(LCAcommit.blobnames());
         files.addAll(currentcommit.blobnames());
         files.addAll(goalcommit.blobnames());
+
         //遍历这个set中的文件，判断给定的条件
         for (String filename : files) {
 
@@ -617,17 +629,27 @@ public class Repository {
             String goalsha1 = goalcontain ? goalcommit.getblobsha1(filename) : "";
             //在给定分支中和LCA中和当前分支中，给定分支中的和LCA中的内容不同，当前分支的和LCA的相同，将文件给stage
             //stage的应该是给定分支的文件内容
-            //TODO 改变if else结构
+            /*
+            //TODO
+            if (branchname.equals("B2")) {
+                System.out.println("sb!! " + filename + " " + lcacontain + " " + currentcontain + " " + goalcontain);
+            }
+*/
             if (lcacontain && currentcontain && goalcontain && !goalsha1.equals(lcasha1) && currentsha1.equals(lcasha1)) {
                 config.addcaches.add(filename);
                 mergestage(goalsha1,filename);
             } else if (!lcacontain && !currentcontain && goalcontain) {
                 //如果不在LCA也不在当前分支中，但是在给定分支中，则这个文件应该被checkout并且stage
+                config.store();
                 checkoutfile(goalcommit.SHA1(),filename,1);
+                config.load();
                 mergestage(goalsha1,filename);
             } else if (lcacontain && currentcontain && !goalcontain && currentsha1.equals(lcasha1)) {
                 //在LCA，并且也在当前分支中没有修改，但是不在给定分支中的文件应该被删除和untracked,也就是只动commit的这个文件而不动工作区的这个文件
                 //这里还不能直接改动current commit而是应该在新建的commit上改动,可以删掉addcache里面的并且在removecache中加上
+
+                //System.out.println("sb!!! " + LCAcommit.message() + "   " + filename);
+
                 config.addcaches.remove(filename);
                 config.removecaches.add(filename);
                 File addcachefile = join(ADDCACHE_DIR,filename);
@@ -636,6 +658,10 @@ public class Repository {
                 }
                 File removecachefile = join(REMOVECACHE_DIR,filename);
                 createfile(removecachefile);
+                File cwdfile = join(CWD,filename);
+                if (cwdfile.exists()) {
+                    cwdfile.delete();
+                }
             } else {
                 //有冲突的情况
                 boolean flag = false;
@@ -674,14 +700,13 @@ public class Repository {
                 }
             }
         }
+        config.store();
         //接下来新建一个commit,根据是否冲突的信息
         if (conflict) {
             System.out.println("Encountered a merge conflict.");
         }
         String commitmessage = "Merged " + branchname + " into " + config.branch + ".";
-        commit(commitmessage,new Date());
-        currentcommit = getcurrentcommit();
-        currentcommit.setmerge(goalcommit.SHA1());
+        commit(commitmessage,new Date(),1,goalcommit.SHA1());
 
         config.store();
     }

@@ -54,7 +54,7 @@ public class Main {
                     Utils.message("Incorrect operands.");
                     System.exit(0);
                 }
-                object.commit(args[1],new Date());
+                object.commit(args[1],new Date(),0,"");
                 break;
             case "log":
                 if (args.length != 1) {
