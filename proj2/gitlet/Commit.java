@@ -128,11 +128,9 @@ public class Commit implements Serializable{
         return blobnames;
     }
 
-    public boolean containblob(Blob item) {
-        for (Blob blob : obj.blobs) {
-            if (blob.SHA1().equals(item.SHA1())) {
-                return true;
-            }
+    public boolean containblob(String filename,String contents) {
+        if (contents.equals(blobsha1.get(filename))) {
+            return true;
         }
         return false;
         //return obj.blobs.contains(item);

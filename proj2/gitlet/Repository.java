@@ -146,8 +146,16 @@ public class Repository {
         }
         config.removecaches.remove(filename);
 
-        if (currentcommit.contain(filename) && currentcommit.containblob(objfile)) {
+        if (currentcommit.contain(filename) && currentcommit.containblob(filename,objfile.SHA1())) {
             //如果当前的commit中包含了这个文件，就要删除缓冲区中同名的文件
+            /*
+            //TODO
+            System.out.println("日你哥" + objfile.contents());
+            for (Blob item : currentcommit.blobs()) {
+                System.out.println(item.contents());
+            }
+            */
+
             config.remove_addcache(filename);
             join(ADDCACHE_DIR,filename).delete();
         } else {
@@ -232,7 +240,6 @@ public class Repository {
                 break;
             }
         }
-        //TODO 有合并的情况
     }
 
     public void find(String message) {
@@ -578,9 +585,11 @@ public class Repository {
         Commit currentcommit = getcurrentcommit();
         Commit goalcommit = Utils.readObject(config.getbranchcommit(branchname), Commit.class);
         Commit LCAcommit = getlca(currentcommit,goalcommit);
-
+        /*
         //TODO
-        //System.out.println(LCAcommit.message());
+        System.out.println(LCAcommit.message());
+*/
+
 
         //接下来遍历工作目录，检查是否有untracked的文件被修改或者删除
         for (String filename : Utils.plainFilenamesIn(CWD)) {
@@ -627,9 +636,13 @@ public class Repository {
             String goalsha1 = goalcontain ? goalcommit.getblobsha1(filename) : "";
             //在给定分支中和LCA中和当前分支中，给定分支中的和LCA中的内容不同，当前分支的和LCA的相同，将文件给stage
             //stage的应该是给定分支的文件内容
-
+            /*
             //TODO
-            //System.out.println("sb!! " + filename + " " + lcacontain + " " + currentcontain + " " + goalcontain);
+            if (filename.equals("f.txt")) {
+                System.out.println("sb!! " + filename + " " + lcacontain + " " + currentcontain + " " + goalcontain);
+                System.out.println("sb!! " + filename + " " + Utils.readContentsAsString(join(BLOBS_DIR, lcasha1)) + " " + Utils.readContentsAsString(join(BLOBS_DIR, currentsha1)) + " " + Utils.readContentsAsString(join(BLOBS_DIR, goalsha1)));
+            }
+            */
 
             if (lcacontain && currentcontain && goalcontain && !goalsha1.equals(lcasha1) && currentsha1.equals(lcasha1)) {
                 mergestage(goalsha1,filename);
