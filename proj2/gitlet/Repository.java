@@ -496,6 +496,20 @@ public class Repository {
             System.exit(0);
         }
         File commitfile = join(REFS_DIR,commitid);
+        Commit goalcommit = Utils.readObject(commitfile,Commit.class);
+        Commit currentcommit = getcurrentcommit();
+        boolean canoverwrite = true;
+        for (String item : goalcommit.blobnames()) {
+            File cwdfile = join(CWD,item);
+            if (cwdfile.exists() && !currentcommit.contain(item)) {
+                canoverwrite = false;
+                break;
+            }
+        }
+        if (!canoverwrite) {
+            Utils.message("There is an untracked file in the way; delete it, or add and commit it first.");
+            System.exit(0);
+        }
         config.updatebranch(config.branch,commitfile);
         config.HEAD = commitid;
         config.store();
@@ -560,10 +574,14 @@ public class Repository {
     private String getnewcontents(String currentcontents,String goalcontents) {
         StringBuffer result = new StringBuffer();
         result.append("<<<<<<< HEAD");
-        result.append(currentcontents);
-        result.append("=======");
-        result.append(goalcontents);
-        result.append(">>>>>>>");
+        if (!currentcontents.equals("")) {
+            result.append("\n" + currentcontents);
+        }
+        result.append("\n=======");
+        if (!goalcontents.equals("")) {
+            result.append("\n" + goalcontents);
+        }
+        result.append("\n>>>>>>>");
         return result.toString();
     }
 
