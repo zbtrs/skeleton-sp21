@@ -25,8 +25,11 @@ public class Repository {
 
 
 
-    /** The current working directory. */
+    /** The current working directory **/
+    //TODO
     public static final File CWD = new File(System.getProperty("user.dir"));
+    //public static final File CWD = join(new File(System.getProperty("user.dir")),"test");
+
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
     public static final File REFS_DIR = join(GITLET_DIR,"refs");
@@ -206,7 +209,6 @@ public class Repository {
 
         newcommit.update();
         if (opt == 1) {
-            newcommit = getcurrentcommit();
             newcommit.setmerge(secondparent);
         }
         File newcommitfile = join(REFS_DIR,newcommit.SHA1());
@@ -281,11 +283,11 @@ public class Repository {
         }
         Commit currentcommit = getcurrentcommit();
         File cwdfile = join(CWD,filename);
+        //检查是否会覆盖unstaged的文件
         if (!currentcommit.contain(filename) && config.addcaches.contains(filename) && cwdfile.exists()) {
             Utils.message("There is an untracked file in the way; delete it, or add and commit it first.");
             System.exit(0);
         }
-        //检查是否会覆盖unstaged的文件
         String filesha1 = commit.getblobsha1(filename);
         Blob objfile = new Blob(join(BLOBS_DIR,filesha1));
         File CWDfile = join(CWD,filename);
@@ -577,12 +579,8 @@ public class Repository {
         Commit goalcommit = Utils.readObject(config.getbranchcommit(branchname), Commit.class);
         Commit LCAcommit = getlca(currentcommit,goalcommit);
 
-        /*
         //TODO
-        if (branchname.equals("B2")) {
-            System.out.println("sb!! " + LCAcommit.message());
-        }
-         */
+        //System.out.println(LCAcommit.message());
 
         //接下来遍历工作目录，检查是否有untracked的文件被修改或者删除
         for (String filename : Utils.plainFilenamesIn(CWD)) {
@@ -629,14 +627,11 @@ public class Repository {
             String goalsha1 = goalcontain ? goalcommit.getblobsha1(filename) : "";
             //在给定分支中和LCA中和当前分支中，给定分支中的和LCA中的内容不同，当前分支的和LCA的相同，将文件给stage
             //stage的应该是给定分支的文件内容
-            /*
+
             //TODO
-            if (branchname.equals("B2")) {
-                System.out.println("sb!! " + filename + " " + lcacontain + " " + currentcontain + " " + goalcontain);
-            }
-*/
+            //System.out.println("sb!! " + filename + " " + lcacontain + " " + currentcontain + " " + goalcontain);
+
             if (lcacontain && currentcontain && goalcontain && !goalsha1.equals(lcasha1) && currentsha1.equals(lcasha1)) {
-                config.addcaches.add(filename);
                 mergestage(goalsha1,filename);
             } else if (!lcacontain && !currentcontain && goalcontain) {
                 //如果不在LCA也不在当前分支中，但是在给定分支中，则这个文件应该被checkout并且stage
@@ -647,9 +642,6 @@ public class Repository {
             } else if (lcacontain && currentcontain && !goalcontain && currentsha1.equals(lcasha1)) {
                 //在LCA，并且也在当前分支中没有修改，但是不在给定分支中的文件应该被删除和untracked,也就是只动commit的这个文件而不动工作区的这个文件
                 //这里还不能直接改动current commit而是应该在新建的commit上改动,可以删掉addcache里面的并且在removecache中加上
-
-                //System.out.println("sb!!! " + LCAcommit.message() + "   " + filename);
-
                 config.addcaches.remove(filename);
                 config.removecaches.add(filename);
                 File addcachefile = join(ADDCACHE_DIR,filename);
