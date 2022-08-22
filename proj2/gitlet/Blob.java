@@ -4,15 +4,15 @@ import java.io.File;
 import java.io.Serializable;
 
 public class Blob implements Serializable {
-    private String SHA1,contents;
+    private String sha1, contents;
 
     public Blob(File obj) {
         contents = Utils.readContentsAsString(obj);
-        SHA1 = Utils.sha1(contents);
+        sha1 = Utils.sha1(contents);
     }
 
     public String SHA1() {
-        return SHA1;
+        return sha1;
     }
 
     public String contents() {

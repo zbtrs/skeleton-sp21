@@ -10,14 +10,14 @@ import static gitlet.Utils.join;
 import static gitlet.Utils.sha1;
 
 /** Represents a gitlet commit object.
- *  TODO: It's a good idea to give a description here of what else this Class
+ *
  *  does at a high level.
  *
- *  @author TODO
+ *  @author zbtrs
  */
 public class Commit implements Serializable{
     /**
-     * TODO: add instance variables here.
+     *
      *
      * List all instance variables of the Commit class here with a useful
      * comment above them describing what that variable represents and how that
@@ -25,10 +25,10 @@ public class Commit implements Serializable{
      */
 
     /** The message of this Commit. */
-    private String SHA1;
+    private String sha1;
     private commitcontents obj;
     private Set<String> blobnames;
-    private Map<String,String> blobsha1;
+    private Map<String, String> blobsha1;
 
     public boolean equalinitial() {
         if (obj.parentcommit.equals("")) {
@@ -44,7 +44,7 @@ public class Commit implements Serializable{
     }
     public void print() {
         System.out.println("===");
-        System.out.format("commit %s\n",SHA1);
+        System.out.format("commit %s\n", sha1);
         if (!obj.secondparentcommit.equals("")) {
             System.out.format("Merge: %s %s\n", obj.parentcommit.substring(0,7),obj.secondparentcommit.substring(0,7));
         }
@@ -105,13 +105,13 @@ public class Commit implements Serializable{
         obj.secondparentcommit = "";
         obj.createDate = date;
         obj.blobs = new HashSet<>();
-        SHA1 = obj.getsha1();
+        sha1 = obj.getsha1();
     }
 
     public Commit(String parentid,File parentcommit,String message,Date date) {
         Commit temp = Utils.readObject(parentcommit,Commit.class);
         this.obj = temp.obj;;
-        this.SHA1 = temp.SHA1;
+        this.sha1 = temp.sha1;
         this.blobnames = temp.blobnames;
         this.blobsha1 = temp.blobsha1;
         obj.message = message;
@@ -167,11 +167,11 @@ public class Commit implements Serializable{
     }
 
     public void update() {
-        SHA1 = obj.getsha1();
+        sha1 = obj.getsha1();
     }
 
     public String SHA1() {
-        return SHA1;
+        return sha1;
     }
 
     /* TODO: fill in the rest of this class. */
