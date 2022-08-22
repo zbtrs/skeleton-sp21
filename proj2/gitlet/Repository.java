@@ -603,12 +603,6 @@ public class Repository {
         Commit currentcommit = getcurrentcommit();
         Commit goalcommit = Utils.readObject(config.getbranchcommit(branchname), Commit.class);
         Commit LCAcommit = getlca(currentcommit,goalcommit);
-        /*
-        //TODO
-        System.out.println(LCAcommit.message());
-*/
-
-
         //接下来遍历工作目录，检查是否有untracked的文件被修改或者删除
         for (String filename : Utils.plainFilenamesIn(CWD)) {
             if (!currentcommit.contain(filename)) {
@@ -654,16 +648,13 @@ public class Repository {
             String goalsha1 = goalcontain ? goalcommit.getblobsha1(filename) : "";
             //在给定分支中和LCA中和当前分支中，给定分支中的和LCA中的内容不同，当前分支的和LCA的相同，将文件给stage
             //stage的应该是给定分支的文件内容
-            /*
-            //TODO
-            if (filename.equals("f.txt")) {
-                System.out.println("sb!! " + filename + " " + lcacontain + " " + currentcontain + " " + goalcontain);
-                System.out.println("sb!! " + filename + " " + Utils.readContentsAsString(join(BLOBS_DIR, lcasha1)) + " " + Utils.readContentsAsString(join(BLOBS_DIR, currentsha1)) + " " + Utils.readContentsAsString(join(BLOBS_DIR, goalsha1)));
-            }
-            */
-
             if (lcacontain && currentcontain && goalcontain && !goalsha1.equals(lcasha1) && currentsha1.equals(lcasha1)) {
                 mergestage(goalsha1,filename);
+                //还要在工作目录中写入
+                File cwdfile = join(CWD,filename);
+                createfile(cwdfile);
+                Utils.writeContents(cwdfile,Utils.readContentsAsString(join(BLOBS_DIR, goalsha1)));
+
             } else if (!lcacontain && !currentcontain && goalcontain) {
                 //如果不在LCA也不在当前分支中，但是在给定分支中，则这个文件应该被checkout并且stage
                 config.store();
