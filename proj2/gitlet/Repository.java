@@ -560,14 +560,10 @@ public class Repository {
     private String getnewcontents(String currentcontents,String goalcontents) {
         StringBuffer result = new StringBuffer();
         result.append("<<<<<<< HEAD");
-        if (!currentcontents.equals("")) {
-            result.append("\n" + currentcontents);
-        }
-        result.append("\n=======");
-        if (!goalcontents.equals("")) {
-            result.append("\n" + goalcontents);
-        }
-        result.append("\n>>>>>>>");
+        result.append(currentcontents);
+        result.append("=======");
+        result.append(goalcontents);
+        result.append(">>>>>>>");
         return result.toString();
     }
 
