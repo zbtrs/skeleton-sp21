@@ -133,17 +133,9 @@ public class Commit implements Serializable{
             return true;
         }
         return false;
-        //return obj.blobs.contains(item);
     }
     public boolean contain(String item) {
-        //TODO 这里或许可以加快效率
-        for (String blobname : blobnames) {
-            if (blobname.equals(item)) {
-                return true;
-            }
-        }
-        return false;
-        //return blobnames.contains(item);
+        return blobnames.contains(item);
     }
 
     public void additem(String item,Blob newblob) {
@@ -174,5 +166,4 @@ public class Commit implements Serializable{
         return sha1;
     }
 
-    /* TODO: fill in the rest of this class. */
 }

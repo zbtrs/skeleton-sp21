@@ -6,17 +6,14 @@ import java.util.*;
 
 import static gitlet.Utils.*;
 
-// TODO: any imports you need here
 
 /** Represents a gitlet repository.
- *  TODO: It's a good idea to give a description here of what else this Class
  *  does at a high level.
  *
  * @author zbtrs
  */
 public class Repository {
     /**
-     * TODO: add instance variables here.
      *
      * List all instance variables of the Repository class here with a useful
      * comment above them describing what that variable represents and how that
@@ -26,9 +23,7 @@ public class Repository {
 
 
     /** The current working directory **/
-    //TODO
     public static final File CWD = new File(System.getProperty("user.dir"));
-    //public static final File CWD = join(new File(System.getProperty("user.dir")),"test");
 
     /** The .gitlet directory. */
     public static final File GITLET_DIR = join(CWD, ".gitlet");
@@ -42,7 +37,6 @@ public class Repository {
     private static final int INF = 0x7ffffff;
 
 
-    /* TODO: fill in the rest of this class. */
 
     private void checkinit() {
         if (!GITLET_DIR.exists() || !GITLET_DIR.isDirectory()) {
@@ -148,14 +142,6 @@ public class Repository {
 
         if (currentcommit.contain(filename) && currentcommit.containblob(filename,objfile.SHA1())) {
             //如果当前的commit中包含了这个文件，就要删除缓冲区中同名的文件
-            /*
-            //TODO
-            System.out.println("日你哥" + objfile.contents());
-            for (Blob item : currentcommit.blobs()) {
-                System.out.println(item.contents());
-            }
-            */
-
             config.remove_addcache(filename);
             join(ADDCACHE_DIR,filename).delete();
         } else {
